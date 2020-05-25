@@ -1,25 +1,6 @@
 package pathfinding
 
-type Queue struct {
-	queue []*Node
-}
-
-func (q *Queue) Put(n *Node) *Queue {
-	q.queue = append(q.queue, n)
-	return q
-}
-
-func (q *Queue) Get() *Node {
-	val := q.queue[0]
-	q.queue = q.queue[1:]
-	return val
-}
-
-func (q *Queue) Empty() bool {
-	return len(q.queue) == 0
-}
-
-func BFS(world *World, start, goal *Node) []*Node {
+func BFS(start, goal *Node) []*Node {
 	frontier := Queue{}
 	frontier.Put(start)
 	cameFrom := map[*Node]*Node{
@@ -28,6 +9,12 @@ func BFS(world *World, start, goal *Node) []*Node {
 
 	for !frontier.Empty() {
 		current := frontier.Get()
+
+		// early exit
+		if current == goal {
+			break
+		}
+
 		for _, next := range current.Neighbors {
 			if _, ok := cameFrom[next]; !ok {
 				frontier.Put(next)

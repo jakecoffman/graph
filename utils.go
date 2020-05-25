@@ -28,3 +28,22 @@ func ManhattanDistance(a, b Pos) int {
 	dh := Abs(a.X - b.X)
 	return dh + dv
 }
+
+type Queue struct {
+	queue []*Node
+}
+
+func (q *Queue) Put(n *Node) *Queue {
+	q.queue = append(q.queue, n)
+	return q
+}
+
+func (q *Queue) Get() *Node {
+	val := q.queue[0]
+	q.queue = q.queue[1:]
+	return val
+}
+
+func (q *Queue) Empty() bool {
+	return len(q.queue) == 0
+}
