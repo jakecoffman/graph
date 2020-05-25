@@ -16,7 +16,7 @@ func TestWorld_BFS1(t *testing.T) {
 	start := world.FindOne(Start)
 	goal := world.FindOne(Goal)
 
-	path := BFS(world, start, goal)
+	path := BFS(start, goal)
 	if len(path) != 11 {
 		t.Fatal(len(path))
 	}
@@ -34,7 +34,7 @@ func TestWorld_BFS2(t *testing.T) {
 	start := world.FindOne(Start)
 	goal := world.FindOne(Goal)
 
-	path := BFS(world, start, goal)
+	path := BFS(start, goal)
 	if len(path) != 1 {
 		t.Fatal(len(path))
 	}
