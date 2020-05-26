@@ -130,6 +130,7 @@ type Kind rune
 const (
 	Plain = Kind(iota)
 	Wall
+	Water
 	Start
 	Goal
 )
@@ -137,6 +138,7 @@ const (
 var Kinds = map[rune]Kind{
 	' ': Plain,
 	'#': Wall,
+	'w': Water,
 	'S': Start,
 	'G': Goal,
 }
@@ -144,6 +146,12 @@ var Kinds = map[rune]Kind{
 var Symbols = map[Kind]rune{
 	Plain: ' ',
 	Wall:  '#',
+	Water: 'w',
 	Start: 'S',
 	Goal:  'G',
+}
+
+var Costs = map[Kind]int{
+	Plain: 1,
+	Water: 5,
 }
