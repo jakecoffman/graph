@@ -1,11 +1,8 @@
 package pathfinding
 
-import (
-	"container/heap"
-)
+import "container/heap"
 
-// UCS or Dijkstra
-func UCS(start, goal *Node) (path []*Node, found bool) {
+func Astar(start, goal *Node) (path []*Node, found bool) {
 	frontier := &PriorityQueue{}
 	heap.Init(frontier)
 	heap.Push(frontier, &Item{
@@ -29,7 +26,7 @@ func UCS(start, goal *Node) (path []*Node, found bool) {
 			newCost := costSoFar[current.Node] + Costs[next.Kind]
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				priority := newCost
+				priority := newCost + ManhattanDistance(goal.Pos, next.Pos)
 				heap.Push(frontier, &Item{
 					Node:     next,
 					Priority: priority,
