@@ -17,7 +17,7 @@ func BFS(start, goal *Node) (path []*Node, found bool) {
 		}
 
 		for _, next := range current.Neighbors {
-			if _, found := cameFrom[next]; !found {
+			if _, ok := cameFrom[next]; !ok {
 				frontier.Put(next)
 				cameFrom[next] = current
 			}
