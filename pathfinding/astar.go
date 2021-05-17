@@ -1,7 +1,11 @@
 package pathfinding
 
-import "container/heap"
+import (
+	"container/heap"
+	"github.com/jakecoffman/graph"
+)
 
+// Astar or A* is like BFS but only considers the highest priority node first.
 func Astar(start, goal *Node) (path []*Node, found bool) {
 	frontier := &PriorityQueue{}
 	heap.Init(frontier)
@@ -26,7 +30,7 @@ func Astar(start, goal *Node) (path []*Node, found bool) {
 			newCost := costSoFar[current.Node] + Costs[next.Kind]
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				priority := newCost + ManhattanDistance(goal.Pos, next.Pos)
+				priority := newCost + graph.ManhattanDistance(goal.Pos, next.Pos)
 				heap.Push(frontier, &Item{
 					Node:     next,
 					Priority: priority,

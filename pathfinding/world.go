@@ -2,6 +2,7 @@ package pathfinding
 
 import (
 	"fmt"
+	"github.com/jakecoffman/graph"
 	"strings"
 )
 
@@ -10,7 +11,7 @@ type World struct {
 	world         [][]*Node
 }
 
-// don't you dare close your eyes
+// NewWorld is the World constructor. Takes a serialized World as input.
 func NewWorld(input string) *World {
 	str := strings.TrimSpace(input)
 	rows := strings.Split(str, "\n")
@@ -24,7 +25,7 @@ func NewWorld(input string) *World {
 	for x := 0; x < g.width; x++ {
 		g.world = append(g.world, []*Node{})
 		for y := 0; y < g.height; y++ {
-			g.world[x] = append(g.world[x], &Node{Pos: Pos{x, y}})
+			g.world[x] = append(g.world[x], &Node{Pos: graph.Pos{x, y}})
 		}
 	}
 
@@ -45,7 +46,7 @@ func NewWorld(input string) *World {
 			if node.Kind == Wall {
 				continue
 			}
-			WalkNeighbors(Pos{x, y}, func(nX, nY int) {
+			graph.WalkNeighbors(graph.Pos{x, y}, func(nX, nY int) {
 				if nX >= g.width {
 					nX -= g.width
 				}
@@ -66,8 +67,9 @@ func NewWorld(input string) *World {
 	return g
 }
 
+// RenderPath serializes a path in a human readable way.
 func (w *World) RenderPath(path []*Node) string {
-	pathLocs := map[Pos]bool{}
+	pathLocs := map[graph.Pos]bool{}
 	for _, p := range path {
 		pathLocs[p.Pos] = true
 	}
@@ -76,7 +78,7 @@ func (w *World) RenderPath(path []*Node) string {
 		for y := 0; y < w.height; y++ {
 			t := w.At(x, y)
 			r := ' '
-			if pathLocs[Pos{x, y}] {
+			if pathLocs[graph.Pos{x, y}] {
 				r = 'x'
 			} else if t != nil {
 				r = Symbols[t.Kind]
@@ -103,21 +105,9 @@ func (w *World) FindOne(kind Kind) *Node {
 	return nil
 }
 
-type Pos struct {
-	X, Y int
-}
-
-func (p Pos) Add(other Pos) Pos {
-	return Pos{p.X + other.X, p.Y + other.Y}
-}
-
-func (p Pos) Sub(other Pos) Pos {
-	return Pos{other.X - p.X, other.Y + p.Y}
-}
-
 type Node struct {
 	Kind
-	Pos
+	graph.Pos
 	Neighbors []*Node
 }
 

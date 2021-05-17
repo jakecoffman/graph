@@ -1,6 +1,6 @@
-# pathfinding
+# graph
 
-Just some pathfinding algos in Go, nothing to see here move along in this path: 1,1 1,2 1,3
+Graph (and Tree) algorithms in Go.
 
 Featuring:
 - A* (Astar)

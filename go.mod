@@ -1,3 +1,3 @@
-module github.com/jakecoffman/pathfinding
+module github.com/jakecoffman/graph
 
-go 1.13
+go 1.16

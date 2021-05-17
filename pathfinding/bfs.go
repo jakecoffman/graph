@@ -8,7 +8,7 @@ func BFS(start, goal *Node) (path []*Node, found bool) {
 	}
 
 	for !frontier.Empty() {
-		current := frontier.Get()
+		current := frontier.Pop()
 
 		// early exit
 		if current == goal {
