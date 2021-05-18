@@ -2,7 +2,6 @@ package optimization
 
 import (
 	"container/heap"
-	"log"
 	"time"
 )
 
@@ -12,7 +11,7 @@ const (
 )
 
 // Chokudai is like DFS but considers the highest priority nodes first.
-func Chokudai(start, goal *State) (nextStep *State, found bool) {
+func Chokudai(start *State) (nextStep *State, found bool) {
 	pqs := make([]*PriorityQueue, maxTurns+1)
 	for i := 0; i < len(pqs); i++ {
 		pqs[i] = &PriorityQueue{}
@@ -38,11 +37,12 @@ func Chokudai(start, goal *State) (nextStep *State, found bool) {
 				item := pqs[depth].Pop().(*Item)
 				state := item.State
 
-				for _, next := range state.Neighbors {
+				for _, move := range state.PossibleNextMoves() {
+					next := state.Apply(move)
 					if _, seen := cameFrom[next]; !seen {
 						pqs[depth+1].Push(&Item{
 							State:    next,
-							Priority: state.Priority(),
+							Priority: state.Evaluation(),
 						})
 						cameFrom[next] = state
 					}
@@ -56,23 +56,15 @@ func Chokudai(start, goal *State) (nextStep *State, found bool) {
 		chokudaiWidth++
 	}
 
-	log.Println("FOUND PATHS:", pqs[maxTurns].Len())
-
 	if pqs[maxTurns].Len() == 0 {
 		return
 	}
 	best := pqs[maxTurns].Pop().(*Item).State
 	found = true
 
-	log.Println("BUILDING PATH")
 	var path []*State
 	current := best
-	var i int
 	for current != start {
-		if i == 10 {
-			break
-		}
-		i++
 		path = append(path, current)
 		current = cameFrom[current]
 	}

@@ -24,11 +24,12 @@ search:
 				break search
 			}
 
-			for _, next := range state.Neighbors {
+			for _, move := range state.PossibleNextMoves() {
+				next := state.Apply(move)
 				if _, seen := cameFrom[next]; !seen {
 					heap.Push(set, &Item{
 						State:    next,
-						Priority: state.Priority(),
+						Priority: state.Evaluation(),
 					})
 					cameFrom[next] = state
 				}

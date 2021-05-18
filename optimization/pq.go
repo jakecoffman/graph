@@ -2,7 +2,7 @@ package optimization
 
 import "container/heap"
 
-// Priority queue copy-pasted from Go docs
+// Evaluation queue copy-pasted from Go docs
 
 // A PriorityQueue implements heap.Interface and holds Items.
 type PriorityQueue []*Item
@@ -22,9 +22,9 @@ type Item struct {
 // Len returns the length of the priority queue
 func (pq PriorityQueue) Len() int { return len(pq) }
 
-// Less defines if this is a min-heap or a max-heap. For pathfinding we want min.
+// Less defines if this is a min-heap or a max-heap. For optimization we want max.
 func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].Priority < pq[j].Priority
+	return pq[i].Priority > pq[j].Priority
 }
 
 // Swap swaps items at index i and j
@@ -53,7 +53,7 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return item
 }
 
-// update modifies the Priority and value of an Item in the queue.
+// update modifies the Evaluation and value of an Item in the queue.
 func (pq *PriorityQueue) update(item *Item, value *State, priority int) {
 	item.State = value
 	item.Priority = priority
