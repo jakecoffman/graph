@@ -68,5 +68,4 @@ func (pq PriorityQueue) Empty() bool {
 // Clear empties the priority queue but retains the memory
 func (pq *PriorityQueue) Clear() {
 	*pq = (*pq)[0:0]
-	heap.Init(pq)
 }

@@ -2,32 +2,31 @@ package optimization
 
 import (
 	"container/heap"
+	"time"
 )
 
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
-func Beam(beamSize int, start, goal *State) (path []*State, found bool) {
-	var beam Queue
-	beam.Put(start)
-	set := &PriorityQueue{}
+func Beam(beamSize int, start *State) []*State {
+	beam := &PriorityQueue{}
+	heap.Push(beam, start)
+	nextStates := &PriorityQueue{}
 	cameFrom := map[*State]*State{
 		start: nil,
 	}
+	startTime := time.Now()
 
-search:
-	for !beam.Empty() {
-		set.Clear()
-		for b := 0; !beam.Empty(); b++ {
-			state := beam.Pop()
-
-			if state == goal {
-				found = true
-				break search
+	for time.Now().Sub(startTime) < limit {
+		nextStates.Clear()
+		for b := 0; b < beamSize; b++ {
+			if beam.Empty() {
+				break
 			}
+			state := heap.Pop(beam).(*Item).State
 
 			for _, move := range state.PossibleNextMoves() {
 				next := state.Apply(move)
 				if _, seen := cameFrom[next]; !seen {
-					heap.Push(set, &Item{
+					heap.Push(nextStates, &Item{
 						State:    next,
 						Priority: state.Evaluation(),
 					})
@@ -35,19 +34,13 @@ search:
 				}
 			}
 		}
-		beam.Clear()
-		// This is where Beam search restricts the search space by only
-		// considering nodes that are closer to the goal.
-		for i := 0; i < beamSize && !set.Empty(); i++ {
-			beam.Put(heap.Pop(set).(*Item).State)
-		}
+		beam = nextStates
 	}
 
-	if !found {
-		return
-	}
+	best := heap.Pop(nextStates).(*Item).State
 
-	current := goal
+	var path []*State
+	current := best
 	for current != start {
 		path = append(path, current)
 		current = cameFrom[current]
@@ -56,5 +49,5 @@ search:
 	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
 		path[i], path[j] = path[j], path[i]
 	}
-	return
+	return path
 }

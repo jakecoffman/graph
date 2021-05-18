@@ -8,7 +8,6 @@ import (
 // Astar or A* is like BFS but only considers the highest priority node first.
 func Astar(start, goal *Node) (path []*Node, found bool) {
 	frontier := &PriorityQueue{}
-	heap.Init(frontier)
 	heap.Push(frontier, &Item{
 		Node:     start,
 		Priority: 0,

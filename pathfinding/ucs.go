@@ -7,7 +7,6 @@ import (
 // UCS or Dijkstra is like BFS but takes cost into account.
 func UCS(start, goal *Node) (path []*Node, found bool) {
 	frontier := &PriorityQueue{}
-	heap.Init(frontier)
 	heap.Push(frontier, &Item{
 		Node:     start,
 		Priority: 0,
