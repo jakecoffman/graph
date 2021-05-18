@@ -10,8 +10,7 @@ const (
 	maxTurns = 2
 )
 
-// Chokudai is like DFS but considers the highest priority nodes first,
-// and restricts the search space.
+// Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
 func Chokudai(start *State) (path []*State) {
 	pqs := make([]*PriorityQueue, maxTurns+1)
 	for i := 0; i < len(pqs); i++ {
@@ -35,7 +34,7 @@ func Chokudai(start *State) (path []*State) {
 					break
 				}
 
-				item := pqs[depth].Pop().(*Item)
+				item := heap.Pop(pqs[depth]).(*Item)
 				state := item.State
 
 				for _, move := range state.PossibleNextMoves() {
@@ -60,7 +59,7 @@ func Chokudai(start *State) (path []*State) {
 	if pqs[maxTurns].Len() == 0 {
 		return nil
 	}
-	best := pqs[maxTurns].Pop().(*Item).State
+	best := heap.Pop(pqs[maxTurns]).(*Item).State
 
 	current := best
 	for current != start {
