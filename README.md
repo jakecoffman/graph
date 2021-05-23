@@ -2,6 +2,8 @@
 
 Graph (and Tree) algorithms in Go.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/jakecoffman/graph.svg)](https://pkg.go.dev/github.com/jakecoffman/graph)
+
 Featuring:
 - A* (Astar)
 - Breadth First Search
