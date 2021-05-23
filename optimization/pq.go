@@ -2,8 +2,6 @@ package optimization
 
 import "container/heap"
 
-// Evaluation queue copy-pasted from Go docs
-
 // A PriorityQueue implements heap.Interface and holds Items.
 type PriorityQueue []*Item
 

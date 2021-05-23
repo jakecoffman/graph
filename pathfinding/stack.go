@@ -1,5 +1,6 @@
 package pathfinding
 
+// Stack is First In Last Out
 type Stack []*Node
 
 func (s *Stack) Push(node *Node) {

@@ -5,8 +5,14 @@ Graph (and Tree) algorithms in Go.
 Featuring:
 - A* (Astar)
 - Breadth First Search
+- Depth First Search
 - Uniform Cost Search (UCS or Dijkstra’s Algorithm)
-- Chokudai coming soon!
+- Beam search
+- Chokudai search
+
+Coming soon:
+- Monte Carlo Tree Search (MCTS)
+- Minimax
 
 ## Pathfinding
 
@@ -18,6 +24,10 @@ start to goal.
 The `optimization` directory contains algorithms that find an optimal solution
 to a problem that doesn't have a single clear goal.
 
+## Bitset
+
+The `bitset` directory contains functions wrapping common bitwise operations.
+
 ## Go performance tips
 
 - Don't use `range`, use `for i := 0; i < len(things); i++`
@@ -26,4 +36,4 @@ to a problem that doesn't have a single clear goal.
 - Turn off Garbage Collection once most things are pooled `debug.SetGCPercent(-1)`
 - Once GC is off, prefer objects on the stack (`Thing{}`) not the heap (`&Thing{}`)
 - Use the built-in benchmark and profiling functionality to find slow spots
-- For even more performance turn arrays into one or more `int`s and use bitwise operators to access the fields. If multiple values are possible on the same position, then use multiple ints as "layers" of the grid.
+- For even more performance turn arrays into bitsets. If multiple values are possible on the same position, then use multiple uints as "layers" of the grid.

@@ -34,6 +34,13 @@ func Min(a, b int) int {
 	return b
 }
 
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func ManhattanDistance(a, b Pos) int {
 	dv := Abs(a.Y - b.Y)
 	//dh := Min(Abs(a.X-b.X), Min(a.X+width-b.x, b.x+width-a.x)) wrap around

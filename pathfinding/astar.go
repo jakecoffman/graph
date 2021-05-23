@@ -6,6 +6,7 @@ import (
 )
 
 // Astar or A* is like BFS but only considers the highest priority node first.
+// It does this by applying a heuristic to tell which states are better.
 func Astar(start, goal *Node) (path []*Node, found bool) {
 	frontier := &PriorityQueue{}
 	heap.Push(frontier, &Item{

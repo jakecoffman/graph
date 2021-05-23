@@ -1,5 +1,6 @@
 package pathfinding
 
+// Queue is First In First Out
 type Queue []*Node
 
 // Put adds node to the end

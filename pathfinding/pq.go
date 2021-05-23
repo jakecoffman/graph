@@ -2,8 +2,6 @@ package pathfinding
 
 import "container/heap"
 
-// Priority queue copy-pasted from Go docs
-
 // A PriorityQueue implements heap.Interface and holds Items.
 type PriorityQueue []*Item
 
