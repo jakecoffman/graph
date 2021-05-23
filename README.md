@@ -3,6 +3,7 @@
 Graph (and Tree) algorithms in Go.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jakecoffman/graph.svg)](https://pkg.go.dev/github.com/jakecoffman/graph)
+![Build](https://github.com/jakecoffman/graph/actions/workflows/go.yml/badge.svg?branch=master)
 
 Featuring:
 - A* (Astar)
