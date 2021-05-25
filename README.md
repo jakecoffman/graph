@@ -12,9 +12,9 @@ Featuring:
 - Uniform Cost Search (UCS or Dijkstra’s Algorithm)
 - Beam search
 - Chokudai search
+- Monte Carlo Tree Search (MCTS)
 
 Coming soon:
-- Monte Carlo Tree Search (MCTS)
 - Minimax
 
 ## Pathfinding

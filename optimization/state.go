@@ -1,7 +1,9 @@
 package optimization
 
 // State represents the game state at each moment
-type State struct{}
+type State struct {
+	move Move
+}
 
 // Move represents an action you can take in the game
 type Move struct{}
@@ -13,6 +15,12 @@ func (s *State) PossibleNextMoves() []Move {
 
 // Apply creates a new state that is the result of performing the move on the current state.
 func (s *State) Apply(move Move) *State {
+	newState := s.Clone()
+	newState.move = move
+	return newState
+}
+
+func (s *State) Clone() *State {
 	return &State{}
 }
 
