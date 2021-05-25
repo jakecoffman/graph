@@ -17,6 +17,10 @@ Featuring:
 Coming soon:
 - Minimax
 
+## Usage
+
+This is not a library, just copy and paste what you need into your own code.
+
 ## Pathfinding
 
 The `pathfinding` directory contains algorithms that find the shortest path from
