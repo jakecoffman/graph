@@ -12,7 +12,7 @@ const (
 )
 
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
-func Chokudai(start *State) (path []*Node) {
+func Chokudai(width int, start *State) (path []*Node) {
 	pqs := make([]*PriorityQueue, maxTurns+1)
 	for i := 0; i < len(pqs); i++ {
 		pqs[i] = &PriorityQueue{}
@@ -21,13 +21,12 @@ func Chokudai(start *State) (path []*Node) {
 		State:    start,
 		Priority: 0,
 	})
-	chokudaiWidth := 1
 	timeStart := time.Now()
 
 	for time.Now().Sub(timeStart) < limit {
 		var processed int
 		for depth := 0; depth < maxTurns; depth++ {
-			for w := 0; w < chokudaiWidth; w++ {
+			for w := 0; w < width; w++ {
 				if pqs[depth].Empty() {
 					break
 				}
@@ -58,9 +57,8 @@ func Chokudai(start *State) (path []*Node) {
 			break
 		}
 		// In my experience increasing chokudai width is a great way to time out
-		//chokudaiWidth++
+		//width++
 	}
-
 	if pqs[maxTurns].Len() == 0 {
 		return nil
 	}

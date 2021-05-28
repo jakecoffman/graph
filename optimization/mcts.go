@@ -12,9 +12,12 @@ func init() {
 }
 
 // MCTS performs a Monte Carlo Tree Search with Upper Confidence Bound.
-func MCTS(first *State, simulations int, c float64) (nextMove Move) {
-	root := &MCTSNode{state: first}
+func MCTS(first *State, simulations int, c float64) []*Node {
 	start := time.Now()
+	root := &MCTSNode{
+		state:        first,
+		untriedMoves: first.PossibleNextMoves(),
+	}
 
 	for time.Now().Sub(start) < limit {
 		node := root
@@ -34,18 +37,21 @@ func MCTS(first *State, simulations int, c float64) (nextMove Move) {
 			node.untriedMoves = append(node.untriedMoves[:i], node.untriedMoves[i+1:]...)
 
 			newState := node.state.Apply(move)
-			child := &MCTSNode{parent: node, move: move, state: newState}
+			child := &MCTSNode{
+				parent:       node,
+				state:        newState,
+				untriedMoves: newState.PossibleNextMoves(),
+			}
 			node.children = append(node.children, child)
 
 			node = child
 		}
 
 		// Simulation - play randomized games from this new state
-		sim := node.state.Clone()
+		sim := node.state
 		for j := 0; j < simulations; j++ {
 			moves := sim.PossibleNextMoves()
 			if len(moves) == 0 {
-				// game over
 				break
 			}
 			i := rand.Intn(len(moves))
@@ -64,15 +70,20 @@ func MCTS(first *State, simulations int, c float64) (nextMove Move) {
 		node.selectionScore = winRatio + c*math.Sqrt(2*math.Log(float64(node.parent.visits)/float64(node.visits)))
 	}
 
-	sort.Slice(root.children, func(i, j int) bool {
-		return root.children[i].visits > root.children[j].visits
-	})
-	return root.children[0].move
+	var path []*Node
+	current := root
+	for len(current.children) > 0 {
+		sort.Slice(current.children, func(i, j int) bool {
+			return current.children[i].visits > current.children[j].visits
+		})
+		path = append(path, current.children[0].state.At)
+		current = current.children[0]
+	}
+	return path
 }
 
 type MCTSNode struct {
 	parent         *MCTSNode
-	move           Move
 	state          *State
 	totalOutcome   float64
 	visits         uint64

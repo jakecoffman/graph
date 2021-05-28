@@ -6,44 +6,54 @@ import (
 )
 
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
-func Beam(beamSize int, start *State) []*State {
+func Beam(beamSize int, start *State) []*Node {
 	beam := &PriorityQueue{}
-	heap.Push(beam, start)
+	heap.Push(beam, &Item{
+		State:    start,
+		Priority: 0,
+	})
 	nextStates := &PriorityQueue{}
-	cameFrom := map[*State]*State{
-		start: nil,
-	}
 	startTime := time.Now()
+	best := start
 
 	for time.Now().Sub(startTime) < limit {
 		nextStates.Clear()
+		// beam size is restricted
 		for b := 0; b < beamSize; b++ {
 			if beam.Empty() {
 				break
 			}
-			state := heap.Pop(beam).(*Item).State
-
-			for _, move := range state.PossibleNextMoves() {
-				next := state.Apply(move)
-				if _, seen := cameFrom[next]; !seen {
-					heap.Push(nextStates, &Item{
-						State:    next,
-						Priority: state.Evaluation(),
-					})
-					cameFrom[next] = state
+			current := heap.Pop(beam).(*Item)
+			moves := current.PossibleNextMoves()
+			if len(moves) == 0 {
+				// terminal state
+				if best.Evaluation() < current.Evaluation() {
+					best = current.State
 				}
+				continue
+			}
+
+			for _, move := range moves {
+				next := current.Apply(move)
+				heap.Push(nextStates, &Item{
+					State:    next,
+					Priority: next.Evaluation(),
+				})
 			}
 		}
-		beam = nextStates
+		beam, nextStates = nextStates, beam
 	}
 
-	best := heap.Pop(nextStates).(*Item).State
+	if best == nil {
+		// in case we saw no terminal state, use the best so far
+		best = heap.Pop(beam).(*Item).State
+	}
 
-	var path []*State
+	var path []*Node
 	current := best
 	for current != start {
-		path = append(path, current)
-		current = cameFrom[current]
+		path = append(path, current.At)
+		current = current.CameFrom
 	}
 	// reverse
 	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {

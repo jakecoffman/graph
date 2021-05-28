@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestChokudai(t *testing.T) {
+func TestMCTS(t *testing.T) {
 	world := NewWorld(`
 ################
 #    #G   # G  #
@@ -24,7 +24,7 @@ func TestChokudai(t *testing.T) {
 		At:    startNode,
 	}
 	start := time.Now()
-	path := Chokudai(2, state)
+	path := MCTS(state, 10, 1.5)
 
 	log.Println("Took", time.Now().Sub(start))
 	fmt.Println(world.RenderPath(path))
