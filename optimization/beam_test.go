@@ -8,23 +8,18 @@ import (
 )
 
 func TestBeam(t *testing.T) {
-	world := NewWorld(`
-################
-#    #G   # G  #
-#  # # #  # #  #
-#S#  # #     # #
-# # G     #  #G#
-# # ##### #  # #
-#     G        #
-################
-`)
+	world := NewWorld(map1)
 	startNode := world.FindOne(Start)
 	state := &State{
 		World: *world,
 		At:    startNode,
 	}
 	start := time.Now()
-	path := Beam(3, state)
+	const (
+		beamSize = 200
+		limit    = 100 * time.Millisecond
+	)
+	path := Beam(state, beamSize, limit)
 
 	log.Println("Took", time.Now().Sub(start))
 	fmt.Println(world.RenderPath(path))

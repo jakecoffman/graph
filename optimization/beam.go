@@ -6,7 +6,7 @@ import (
 )
 
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
-func Beam(beamSize int, start *State) []*Node {
+func Beam(start *State, beamSize int, limit time.Duration) []*Node {
 	beam := &PriorityQueue{}
 	heap.Push(beam, &Item{
 		State:    start,

@@ -6,13 +6,8 @@ import (
 	"time"
 )
 
-const (
-	limit    = 100 * time.Millisecond
-	maxTurns = 100
-)
-
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
-func Chokudai(width int, start *State) (path []*Node) {
+func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*Node) {
 	pqs := make([]*PriorityQueue, maxTurns+1)
 	for i := 0; i < len(pqs); i++ {
 		pqs[i] = &PriorityQueue{}

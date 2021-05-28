@@ -12,7 +12,7 @@ func init() {
 }
 
 // MCTS performs a Monte Carlo Tree Search with Upper Confidence Bound.
-func MCTS(first *State, simulations int, c float64) []*Node {
+func MCTS(first *State, simulations int, c float64, limit time.Duration) []*Node {
 	start := time.Now()
 	root := &MCTSNode{
 		state:        first,

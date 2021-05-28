@@ -8,23 +8,19 @@ import (
 )
 
 func TestMCTS(t *testing.T) {
-	world := NewWorld(`
-################
-#    #G   # G  #
-#  # # #  # #  #
-#S#  # #     # #
-# # G     #  #G#
-# # ##### #  # #
-#     G        #
-################
-`)
+	world := NewWorld(map1)
 	startNode := world.FindOne(Start)
 	state := &State{
 		World: *world,
 		At:    startNode,
 	}
 	start := time.Now()
-	path := MCTS(state, 10, 1.5)
+	const (
+		simulations = 10
+		c           = 1.5
+		limit       = 100 * time.Millisecond
+	)
+	path := MCTS(state, simulations, c, limit)
 
 	log.Println("Took", time.Now().Sub(start))
 	fmt.Println(world.RenderPath(path))
