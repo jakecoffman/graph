@@ -13,7 +13,7 @@ func init() {
 
 // MCTS performs a Monte Carlo Tree Search with Upper Confidence Bound.
 func MCTS(first *State, simulations int, c float64) (nextMove Move) {
-	root := &Node{state: first}
+	root := &MCTSNode{state: first}
 	start := time.Now()
 
 	for time.Now().Sub(start) < limit {
@@ -34,7 +34,7 @@ func MCTS(first *State, simulations int, c float64) (nextMove Move) {
 			node.untriedMoves = append(node.untriedMoves[:i], node.untriedMoves[i+1:]...)
 
 			newState := node.state.Apply(move)
-			child := &Node{parent: node, move: move, state: newState}
+			child := &MCTSNode{parent: node, move: move, state: newState}
 			node.children = append(node.children, child)
 
 			node = child
@@ -70,13 +70,13 @@ func MCTS(first *State, simulations int, c float64) (nextMove Move) {
 	return root.children[0].move
 }
 
-type Node struct {
-	parent         *Node
+type MCTSNode struct {
+	parent         *MCTSNode
 	move           Move
 	state          *State
 	totalOutcome   float64
 	visits         uint64
 	untriedMoves   []Move
-	children       []*Node
+	children       []*MCTSNode
 	selectionScore float64
 }

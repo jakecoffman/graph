@@ -2,16 +2,17 @@ package optimization
 
 import (
 	"container/heap"
+	"log"
 	"time"
 )
 
 const (
-	limit    = 10 * time.Millisecond
-	maxTurns = 2
+	limit    = 100 * time.Millisecond
+	maxTurns = 100
 )
 
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
-func Chokudai(start *State) (path []*State) {
+func Chokudai(start *State) (path []*Node) {
 	pqs := make([]*PriorityQueue, maxTurns+1)
 	for i := 0; i < len(pqs); i++ {
 		pqs[i] = &PriorityQueue{}
@@ -20,9 +21,6 @@ func Chokudai(start *State) (path []*State) {
 		State:    start,
 		Priority: 0,
 	})
-	cameFrom := map[*State]*State{
-		start: nil,
-	}
 	chokudaiWidth := 1
 	timeStart := time.Now()
 
@@ -35,25 +33,32 @@ func Chokudai(start *State) (path []*State) {
 				}
 
 				item := heap.Pop(pqs[depth]).(*Item)
+				processed++
 				state := item.State
 
-				for _, move := range state.PossibleNextMoves() {
+				moves := state.PossibleNextMoves()
+				if len(moves) == 0 {
+					// terminal state
+					heap.Push(pqs[maxTurns], item)
+					continue
+				}
+
+				for _, move := range moves {
 					next := state.Apply(move)
-					if _, seen := cameFrom[next]; !seen {
-						pqs[depth+1].Push(&Item{
-							State:    next,
-							Priority: state.Evaluation(),
-						})
-						cameFrom[next] = state
-					}
+					heap.Push(pqs[depth+1], &Item{
+						State:    next,
+						Priority: next.Evaluation(),
+					})
 				}
 			}
 		}
 		if processed == 0 {
 			// all queues are empty except the final one which contains the end of all the paths
+			log.Println("All nodes processed")
 			break
 		}
-		chokudaiWidth++
+		// In my experience increasing chokudai width is a great way to time out
+		//chokudaiWidth++
 	}
 
 	if pqs[maxTurns].Len() == 0 {
@@ -63,8 +68,8 @@ func Chokudai(start *State) (path []*State) {
 
 	current := best
 	for current != start {
-		path = append(path, current)
-		current = cameFrom[current]
+		path = append(path, current.At)
+		current = current.CameFrom
 	}
 	// reverse
 	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
