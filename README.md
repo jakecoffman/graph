@@ -37,7 +37,7 @@ The `bitset` directory contains functions wrapping common bitwise operations.
 
 ## Go performance tips
 
-- Don't use `range`, use `for i := 0; i < len(things); i++`
+- Don't use `for _, copy := range`, use `for i := range` or `for i := 0; i < len(things); i++`.
 - Don't use `map`, use arrays or slices
 - Pool objects by making a big array `var pool = make([]Thing, 1_000_000)`, grab items like `thing := &pool[cursor]; cursor++`
 - Turn off Garbage Collection once most things are pooled `debug.SetGCPercent(-1)`
