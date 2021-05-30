@@ -2,18 +2,17 @@ package optimization
 
 import (
 	"fmt"
-	"github.com/jakecoffman/graph/pathfinding"
 	"log"
 	"testing"
 	"time"
 )
 
 func TestGeneticAlgorithm(t *testing.T) {
-	world := pathfinding.NewWorld(map1)
+	world := NewWorld(map1)
 	startNode := world.FindOne(Start)
 	state := &State{
 		World: *world,
-		At:    &VisitedNode{Node: startNode},
+		At:    startNode,
 	}
 	start := time.Now()
 	const (
