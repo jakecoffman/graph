@@ -2,6 +2,7 @@ package optimization
 
 import (
 	"github.com/jakecoffman/graph"
+	"log"
 	"math/rand"
 	"sort"
 	"time"
@@ -13,7 +14,6 @@ type Gene = *Node
 // Chromosome is a route through all Goals
 type Chromosome struct {
 	Route   []Gene
-	Fitness float64
 }
 
 // Population is all routes this generation
@@ -26,7 +26,7 @@ func NewChromosome(w World) Chromosome {
 	goals := w.FindAll(Goal)
 	goals = append(goals, w.FindOne(Start))
 	permutation := rand.Perm(len(goals))
-	var route []Gene
+	var route []*Node
 	for i := 0; i < len(goals); i++ {
 		route = append(route, goals[permutation[i]])
 	}
@@ -37,16 +37,12 @@ func NewChromosome(w World) Chromosome {
 
 // CalcFitness returns 0 for a bad route up to 1 for a good route
 func (c *Chromosome) CalcFitness() float64 {
-	if c.Fitness != 0 {
-		return c.Fitness
-	}
 	var distance int
 	for i := 0; i < len(c.Route)-1; i++ {
 		from, to := c.Route[i], c.Route[i+1]
 		distance += graph.ManhattanDistance(from.Pos, to.Pos)
 	}
-	c.Fitness = 1. / (float64(distance) + 1)
-	return c.Fitness
+	return 1. / float64(distance)
 }
 
 // NewPopulation creates the first generation
@@ -71,12 +67,12 @@ func (p *Population) Rank() {
 func (p *Population) Selection(eliteSize int) []Chromosome {
 	selection := p.Routes[:eliteSize]
 
-	sumFitness := p.Routes[0].Fitness
+	sumFitness := p.Routes[0].CalcFitness()
 	cumulativeSum := make([]float64, len(p.Routes))
 	cumulativeSum[0] = sumFitness
 	for i := 1; i < len(p.Routes); i++ {
-		sumFitness += p.Routes[i].Fitness
-		cumulativeSum[i] = p.Routes[i].Fitness + cumulativeSum[i-1]
+		sumFitness += p.Routes[i].CalcFitness()
+		cumulativeSum[i] = p.Routes[i].CalcFitness() + cumulativeSum[i-1]
 	}
 	percentOfSum := make([]float64, len(p.Routes))
 	for i := 0; i < len(p.Routes); i++ {
@@ -96,47 +92,52 @@ func (p *Population) Selection(eliteSize int) []Chromosome {
 	return selection
 }
 
-func (p *Population) Breed(matingPool []Chromosome, eliteSize int) (children []Chromosome) {
+func BreedPopulation(matingPool []Chromosome, eliteSize int) (children Population) {
 	length := len(matingPool) - eliteSize
 	perm := rand.Perm(len(matingPool))
 
 	for i := 0; i < eliteSize; i++ {
-		children = append(children, matingPool[i])
+		children.Routes = append(children.Routes, matingPool[i])
 	}
 	for i := 0; i < length; i++ {
 		child := Breed(matingPool[perm[i]], matingPool[perm[len(matingPool)-i-1]])
-		children = append(children, child)
+		children.Routes = append(children.Routes, child)
 	}
+
 	return children
 }
 
 // Breed implements ordered crossover since the travelling salesman problem we are solving
 // involves going through each goal 1 time.
 func Breed(parent1, parent2 Chromosome) Chromosome {
-	var child, p1Genes, p2Genes Chromosome
+	var child Chromosome
 
-	geneA := rand.Intn(len(parent1.Route))
-	geneB := rand.Intn(len(parent2.Route))
+	start := rand.Intn(len(parent1.Route))
+	end := rand.Intn(len(parent1.Route))
 
-	startGene := graph.Min(geneA, geneB)
-	endGene := graph.Max(geneA, geneB)
+	if start > end {
+		start, end = end, start
+	}
 
-	p1Genes.Route = parent1.Route[startGene:endGene]
+	for i := start; i < end; i++ {
+		child.Route = append(child.Route, parent1.Route[i])
+	}
+	p2Genes := []*Node{}
 	for i := range parent2.Route {
 		goal := parent2.Route[i]
 		var found bool
-		for j := range parent1.Route {
-			if goal == parent1.Route[j] {
+		for j := range child.Route {
+			if goal.Pos == child.Route[j].Pos {
 				found = true
 				break
 			}
 		}
 		if !found {
-			p2Genes.Route = append(p2Genes.Route, goal)
+			p2Genes = append(p2Genes, goal)
 		}
 	}
 
-	child.Route = append(p1Genes.Route, p2Genes.Route...)
+	child.Route = append(child.Route, p2Genes...)
 	return child
 }
 
@@ -156,21 +157,22 @@ func Mutate(individual Chromosome, mutationRate float64) {
 	}
 }
 
-func (p *Population) NextGeneration(eliteSize int, mutationRate float64) {
+func (p *Population) NextGeneration(eliteSize int, mutationRate float64) Population {
 	p.Rank()
 	matingPool := p.Selection(eliteSize)
-	p.Breed(matingPool, eliteSize)
-	p.MutatePopulation(mutationRate)
+	children := BreedPopulation(matingPool, eliteSize)
+	children.MutatePopulation(mutationRate)
+	return children
 }
 
 func GeneticAlgorithm(first *State, populationSize int, eliteSize int, mutationRate float64, limit time.Duration) []*Node {
 	start := time.Now()
 	p := NewPopulation(populationSize, first.World)
 	for time.Now().Sub(start) < limit {
-		p.NextGeneration(eliteSize, mutationRate)
+		p = p.NextGeneration(eliteSize, mutationRate)
 	}
 	p.Rank()
-	var route []*Node
+	//var route []*Node
 	// TODO can't use Astar because Node has diverged
 	//goals := p.Routes[0].Route
 	//node := first.At
@@ -181,5 +183,15 @@ func GeneticAlgorithm(first *State, populationSize int, eliteSize int, mutationR
 	//	}
 	//	route = append(route, path...)
 	//}
-	return route
+	for _, r := range p.Routes {
+		var t int
+		for i := 0; i < 5; i++ {
+			t += graph.ManhattanDistance(r.Route[i].Pos, r.Route[i+1].Pos)
+		}
+		log.Println("TOTAL", t, "FITNESS", r.CalcFitness())
+	}
+	for i := range p.Routes[0].Route {
+		log.Println(p.Routes[0].Route[i].Pos)
+	}
+	return p.Routes[0].Route
 }

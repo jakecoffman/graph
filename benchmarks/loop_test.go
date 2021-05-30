@@ -53,6 +53,7 @@ type MyStruct struct {
 }
 
 var myStructs [size]MyStruct
+var myStructPtrs [size]*MyStruct
 
 func init() {
 	for i := 0; i < len(myStructs); i++ {
@@ -63,6 +64,7 @@ func init() {
 			Float1:  rand.Float64(),
 			Float2:  rand.Float64(),
 		}
+		myStructPtrs[i] = &myStructs[i]
 	}
 }
 
@@ -89,6 +91,33 @@ func BenchmarkForStruct(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < len(myStructs); j++ {
 			sum += myStructs[j].AnInt
+		}
+	}
+}
+
+func BenchmarkRangeStructNoCopyPtr(b *testing.B) {
+	sum := 0
+	for i := 0; i < b.N; i++ {
+		for j := range myStructPtrs {
+			sum += myStructPtrs[j].AnInt
+		}
+	}
+}
+
+func BenchmarkRangeStructCopyPtr(b *testing.B) {
+	sum := 0
+	for i := 0; i < b.N; i++ {
+		for _, myStruct := range myStructPtrs {
+			sum += myStruct.AnInt
+		}
+	}
+}
+
+func BenchmarkForStructPtr(b *testing.B) {
+	sum := 0
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < len(myStructPtrs); j++ {
+			sum += myStructPtrs[j].AnInt
 		}
 	}
 }
