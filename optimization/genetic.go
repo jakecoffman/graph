@@ -1,10 +1,12 @@
 package optimization
 
 import (
+	"fmt"
 	"github.com/jakecoffman/graph"
 	"log"
 	"math/rand"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -71,24 +73,11 @@ func (p *Population) Rank() {
 func (p *Population) Selection(eliteSize int) []Chromosome {
 	selection := p.Routes[:eliteSize]
 
-	var sumFitness float64
-	for i := range p.Routes {
-		sumFitness += p.Routes[i].CalcFitness()
-	}
-	// normalize the fitness
-	for i := range p.Routes {
-		p.Routes[i].Fitness /= sumFitness
-	}
-	// calculate cumulative sum (so highest is 1.0) by adding the score of those that come after
-	for i := range p.Routes {
-		for j := i+1; j < len(p.Routes); j++ {
-			p.Routes[i].Fitness += p.Routes[j].Fitness
-		}
-	}
+	p.cumulativeSum()
 
 	for i := 0; i < len(p.Routes)-eliteSize; i++ {
 		pick := rand.Float64()
-		for i := len(p.Routes)-1; i >= 0; i-- {
+		for i := len(p.Routes) - 1; i >= 0; i-- {
 			if pick <= p.Routes[i].Fitness {
 				selection = append(selection, p.Routes[i])
 				break
@@ -97,6 +86,26 @@ func (p *Population) Selection(eliteSize int) []Chromosome {
 	}
 
 	return selection
+}
+
+// cumulativeSum normalizes and calculates cumulative sum
+func (p *Population) cumulativeSum() {
+	var sumFitness float64
+	for i := range p.Routes {
+		sumFitness += p.Routes[i].CalcFitness()
+	}
+	// normalize the fitness
+	for i := range p.Routes {
+		p.Routes[i].Fitness /= sumFitness
+	}
+	// calculate cumulative sum (so highest is 1.0) by adding the score of those that come before
+	var sum float64
+	for i := len(p.Routes) - 1; i >= 0; i-- {
+		fitness := p.Routes[i].Fitness
+		p.Routes[i].Fitness += sum
+		sum += fitness
+		log.Println(p.Routes[i].Fitness)
+	}
 }
 
 func BreedPopulation(matingPool []Chromosome, eliteSize int) (children Population) {
@@ -130,11 +139,11 @@ func Breed(parent1, parent2 Chromosome) Chromosome {
 	}
 
 	var child Chromosome
+	child.Route = make([]Gene, 0, len(parent1.Route))
 	child.Route = append(child.Route, startNode)
 	for i := start; i < end; i++ {
 		child.Route = append(child.Route, parent1Route[i])
 	}
-	p2Genes := []*Node{}
 	for i := range parent2Route {
 		goal := parent2Route[i]
 		var found bool
@@ -145,11 +154,10 @@ func Breed(parent1, parent2 Chromosome) Chromosome {
 			}
 		}
 		if !found {
-			p2Genes = append(p2Genes, goal)
+			child.Route = append(child.Route, goal)
 		}
 	}
 
-	child.Route = append(child.Route, p2Genes...)
 	return child
 }
 
@@ -186,25 +194,14 @@ func GeneticAlgorithm(first *State, populationSize int, eliteSize int, mutationR
 		p = p.NextGeneration(eliteSize, mutationRate)
 	}
 	p.Rank()
-	//var route []*Node
-	// TODO can't use Astar because Node has diverged
-	//goals := p.Routes[0].Route
-	//node := first.At
-	//for i := range goals {
-	//	path, found := pathfinding.Astar(node.Node, goals[i])
-	//	if !found {
-	//		log.Println("Path not found between", node.Pos, "and", goals[i].Pos)
-	//	}
-	//	route = append(route, path...)
-	//}
-	for _, r := range p.Routes {
-		var t int
-		for i := 0; i < 5; i++ {
-			t += graph.ManhattanDistance(r.Route[i].Pos, r.Route[i+1].Pos)
-		}
+	var total int
+	best := p.Routes[0]
+	var str strings.Builder
+	str.WriteString(fmt.Sprint(best.Route[0].Pos))
+	for i := 1; i < len(best.Route); i++ {
+		str.WriteString(fmt.Sprint(best.Route[i].Pos))
+		total += graph.ManhattanDistance(best.Route[i-1].Pos, best.Route[i].Pos)
 	}
-	for i := range p.Routes[0].Route {
-		log.Println(p.Routes[0].Route[i].Pos)
-	}
+	log.Println(str.String(), "Total manhattan distance:", total)
 	return p.Routes[0].Route
 }

@@ -3,11 +3,14 @@ package optimization
 import (
 	"fmt"
 	"log"
+	"os"
+	"runtime/pprof"
 	"testing"
 	"time"
 )
 
 func TestGeneticAlgorithm(t *testing.T) {
+	log.SetFlags(0)
 	world := NewWorld(map1)
 	startNode := world.FindOne(Start)
 	state := &State{
@@ -16,27 +19,60 @@ func TestGeneticAlgorithm(t *testing.T) {
 	}
 	start := time.Now()
 	const (
-		populationSize = 10
-		eliteSize      = 2
-		mutationRate   = .5
+		populationSize = 1000
+		eliteSize      = 100
+		mutationRate   = .3
 		limit          = 100 * time.Millisecond
 	)
 	path := GeneticAlgorithm(state, populationSize, eliteSize, mutationRate, limit)
 
-	log.Println("Took", time.Now().Sub(start))
+	log.Println("Took", time.Now().Sub(start)) // best path is 24 (manhattan)
 	fmt.Println(world.RenderPath(path))
-	fmt.Println("Path is", len(path))
 }
 
-func TestPopulation_Selection(t *testing.T) {
+func TestPopulation_cumulativeSum(t *testing.T) {
 	p := &Population{Routes: []Chromosome{{
-		Fitness: 83.5,
-	},{
-		Fitness: 10,
-	},{
 		Fitness: 120.2,
 	},{
+		Fitness: 83.5,
+	},{
 		Fitness: 33.3,
+	},{
+		Fitness: 10,
 	}}}
-	p.Selection(0)
+	p.cumulativeSum()
+
+	if p.Routes[0].Fitness != 1.0 {
+		t.Error(p.Routes[0].Fitness)
+	}
+}
+
+func BenchmarkGeneticAlgorithm(b *testing.B) {
+	{
+		f, err := os.Create("cpu.prof")
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		defer f.Close()
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
+	log.SetFlags(0)
+	world := NewWorld(map1)
+	startNode := world.FindOne(Start)
+	state := &State{
+		World: *world,
+		At:    startNode,
+	}
+	const (
+		populationSize = 1000
+		eliteSize      = 100
+		mutationRate   = .3
+		limit          = 100 * time.Millisecond
+	)
+	for i := 0; i < b.N; i++ {
+		GeneticAlgorithm(state, populationSize, eliteSize, mutationRate, limit)
+	}
 }
