@@ -104,7 +104,6 @@ func (p *Population) cumulativeSum() {
 		fitness := p.Routes[i].Fitness
 		p.Routes[i].Fitness += sum
 		sum += fitness
-		log.Println(p.Routes[i].Fitness)
 	}
 }
 
