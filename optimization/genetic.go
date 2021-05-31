@@ -25,14 +25,13 @@ type Population struct {
 // NewChromosome creates a random sampling of goal nodes
 func NewChromosome(w World) Chromosome {
 	goals := w.FindAll(Goal)
-	goals = append(goals, w.FindOne(Start))
 	permutation := rand.Perm(len(goals))
 	var route []*Node
 	for i := 0; i < len(goals); i++ {
 		route = append(route, goals[permutation[i]])
 	}
 	return Chromosome{
-		Route: route,
+		Route: append(w.FindAll(Start), route...),
 	}
 }
 
@@ -118,24 +117,29 @@ func BreedPopulation(matingPool []Chromosome, eliteSize int) (children Populatio
 // Breed implements ordered crossover since the travelling salesman problem we are solving
 // involves going through each goal 1 time.
 func Breed(parent1, parent2 Chromosome) Chromosome {
-	var child Chromosome
+	// remove the start for both to avoid mutating it
+	startNode := parent1.Route[0]
+	parent1Route := parent1.Route[1:]
+	parent2Route := parent2.Route[1:]
 
-	start := rand.Intn(len(parent1.Route))
-	end := rand.Intn(len(parent1.Route))
+	start := rand.Intn(len(parent1Route))
+	end := rand.Intn(len(parent1Route))
 
 	if start > end {
 		start, end = end, start
 	}
 
+	var child Chromosome
+	child.Route = append(child.Route, startNode)
 	for i := start; i < end; i++ {
-		child.Route = append(child.Route, parent1.Route[i])
+		child.Route = append(child.Route, parent1Route[i])
 	}
 	p2Genes := []*Node{}
-	for i := range parent2.Route {
-		goal := parent2.Route[i]
+	for i := range parent2Route {
+		goal := parent2Route[i]
 		var found bool
 		for j := range child.Route {
-			if goal.Pos == child.Route[j].Pos {
+			if goal == child.Route[j] {
 				found = true
 				break
 			}
@@ -157,9 +161,11 @@ func (p *Population) MutatePopulation(mutationRate float64) {
 
 // Mutate may modify an individual route with a swap mutation
 func Mutate(individual Chromosome, mutationRate float64) {
-	for i := range individual.Route {
+	// starting at 1 to skip the start position
+	for i := 1; i < len(individual.Route); i++ {
 		if rand.Float64() < mutationRate {
-			swap := rand.Intn(len(individual.Route))
+			// again, skip the first position
+			swap := rand.Intn(len(individual.Route)-1)+1
 			individual.Route[i], individual.Route[swap] = individual.Route[swap], individual.Route[i]
 		}
 	}
@@ -196,7 +202,6 @@ func GeneticAlgorithm(first *State, populationSize int, eliteSize int, mutationR
 		for i := 0; i < 5; i++ {
 			t += graph.ManhattanDistance(r.Route[i].Pos, r.Route[i+1].Pos)
 		}
-		log.Println("TOTAL", t, "FITNESS", r.CalcFitness())
 	}
 	for i := range p.Routes[0].Route {
 		log.Println(p.Routes[0].Route[i].Pos)
