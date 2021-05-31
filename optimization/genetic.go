@@ -14,6 +14,7 @@ type Gene = *Node
 // Chromosome is a route through all Goals
 type Chromosome struct {
 	Route   []Gene
+	Fitness float64
 }
 
 // Population is all routes this generation
@@ -37,12 +38,16 @@ func NewChromosome(w World) Chromosome {
 
 // CalcFitness returns 0 for a bad route up to 1 for a good route
 func (c *Chromosome) CalcFitness() float64 {
+	if c.Fitness != 0 {
+		return c.Fitness
+	}
 	var distance int
 	for i := 0; i < len(c.Route)-1; i++ {
 		from, to := c.Route[i], c.Route[i+1]
 		distance += graph.ManhattanDistance(from.Pos, to.Pos)
 	}
-	return 1. / float64(distance)
+	c.Fitness = 1. / float64(distance)
+	return c.Fitness
 }
 
 // NewPopulation creates the first generation
@@ -67,22 +72,25 @@ func (p *Population) Rank() {
 func (p *Population) Selection(eliteSize int) []Chromosome {
 	selection := p.Routes[:eliteSize]
 
-	sumFitness := p.Routes[0].CalcFitness()
-	cumulativeSum := make([]float64, len(p.Routes))
-	cumulativeSum[0] = sumFitness
-	for i := 1; i < len(p.Routes); i++ {
+	var sumFitness float64
+	for i := range p.Routes {
 		sumFitness += p.Routes[i].CalcFitness()
-		cumulativeSum[i] = p.Routes[i].CalcFitness() + cumulativeSum[i-1]
 	}
-	percentOfSum := make([]float64, len(p.Routes))
-	for i := 0; i < len(p.Routes); i++ {
-		percentOfSum[i] = 100 * cumulativeSum[i] / sumFitness
+	// normalize the fitness
+	for i := range p.Routes {
+		p.Routes[i].Fitness /= sumFitness
+	}
+	// calculate cumulative sum (so highest is 1.0) by adding the score of those that come after
+	for i := range p.Routes {
+		for j := i+1; j < len(p.Routes); j++ {
+			p.Routes[i].Fitness += p.Routes[j].Fitness
+		}
 	}
 
 	for i := 0; i < len(p.Routes)-eliteSize; i++ {
-		pick := rand.Float64() * 100
-		for i := 0; i < len(p.Routes); i++ {
-			if pick <= percentOfSum[i] {
+		pick := rand.Float64()
+		for i := len(p.Routes)-1; i >= 0; i-- {
+			if pick <= p.Routes[i].Fitness {
 				selection = append(selection, p.Routes[i])
 				break
 			}

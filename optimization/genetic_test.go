@@ -27,3 +27,16 @@ func TestGeneticAlgorithm(t *testing.T) {
 	fmt.Println(world.RenderPath(path))
 	fmt.Println("Path is", len(path))
 }
+
+func TestPopulation_Selection(t *testing.T) {
+	p := &Population{Routes: []Chromosome{{
+		Fitness: 83.5,
+	},{
+		Fitness: 10,
+	},{
+		Fitness: 120.2,
+	},{
+		Fitness: 33.3,
+	}}}
+	p.Selection(0)
+}
