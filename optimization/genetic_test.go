@@ -19,9 +19,9 @@ func TestGeneticAlgorithm(t *testing.T) {
 	}
 	start := time.Now()
 	const (
-		populationSize = 1000
-		eliteSize      = 100
-		mutationRate   = .3
+		populationSize = 100
+		eliteSize      = 10
+		mutationRate   = .1
 		limit          = 100 * time.Millisecond
 	)
 	path := GeneticAlgorithm(state, populationSize, eliteSize, mutationRate, limit)

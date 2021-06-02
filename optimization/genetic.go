@@ -75,7 +75,7 @@ func (p *Population) Selection(eliteSize int) []Chromosome {
 
 	p.cumulativeSum()
 
-	for i := 0; i < len(p.Routes)-eliteSize; i++ {
+	for len(selection) < len(p.Routes) {
 		pick := rand.Float64()
 		for i := len(p.Routes) - 1; i >= 0; i-- {
 			if pick <= p.Routes[i].Fitness {
@@ -162,12 +162,12 @@ func Breed(parent1, parent2 Chromosome) Chromosome {
 
 func (p *Population) MutatePopulation(mutationRate float64) {
 	for i := range p.Routes {
-		Mutate(p.Routes[i], mutationRate)
+		Mutate(&p.Routes[i], mutationRate)
 	}
 }
 
 // Mutate may modify an individual route with a swap mutation
-func Mutate(individual Chromosome, mutationRate float64) {
+func Mutate(individual *Chromosome, mutationRate float64) {
 	// starting at 1 to skip the start position
 	for i := 1; i < len(individual.Route); i++ {
 		if rand.Float64() < mutationRate {
