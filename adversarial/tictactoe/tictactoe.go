@@ -3,6 +3,7 @@ package tictactoe
 import (
 	"fmt"
 	"github.com/jakecoffman/graph/adversarial"
+	"log"
 	"strings"
 )
 
@@ -19,23 +20,29 @@ func (c Cell) String() string {
 }
 
 const (
-	CellBlank = iota
+	CellBlank = Cell(iota)
 	CellX
 	CellO
 )
 
 const (
-	width = 3
+	width  = 3
 	height = 3
 )
 
 type State struct {
-	board []Cell
+	board     []Cell
+	Current   Cell
+	Player    Cell
+	CreatedBy int
 }
 
-func NewState() *State {
+func NewState(player Cell) *State {
 	return &State{
-		board: make([]Cell, width*height),
+		board:     make([]Cell, width*height),
+		Player:    player,
+		Current:   CellX,
+		CreatedBy: -1,
 	}
 }
 
@@ -50,8 +57,9 @@ func (s *State) String() string {
 }
 
 func (s *State) Clone() *State {
-	newState := NewState()
+	newState := NewState(s.Player)
 	copy(newState.board, s.board)
+	newState.Current = s.Current
 	return newState
 }
 
@@ -63,31 +71,55 @@ func (s *State) Set(x, y int, cell Cell) {
 	s.board[width*y+x] = cell
 }
 
+func (s *State) Index(i int) Cell {
+	return s.board[i]
+}
+
+func (s *State) Play(i int) *State {
+	if s.board[i] != CellBlank {
+		log.Panicln("Illegal move", i)
+	}
+	n := s.Clone()
+	n.CreatedBy = i
+	n.board[i] = n.Current
+	if n.Current == CellX {
+		n.Current = CellO
+	} else {
+		n.Current = CellX
+	}
+	return n
+}
+
+func (s *State) Undo(i int) {
+	s.board[i] = CellBlank
+	if s.Current == CellX {
+		s.Current = CellO
+	} else {
+		s.Current = CellX
+	}
+}
+
 func (s *State) IsGameOver() bool {
-	score := s.Score(true) // doesn't matter for this check
+	score := s.Score()
 	return score != 0
 }
 
-func (s *State) Score(xIsPlayer bool) int {
+func (s *State) Score() int {
 	x := (s.board[0] == CellX && s.board[1] == CellX && s.board[2] == CellX) ||
 		(s.board[3] == CellX && s.board[4] == CellX && s.board[5] == CellX) ||
 		(s.board[6] == CellX && s.board[7] == CellX && s.board[8] == CellX) ||
-
 		(s.board[0] == CellX && s.board[3] == CellX && s.board[6] == CellX) ||
 		(s.board[1] == CellX && s.board[4] == CellX && s.board[7] == CellX) ||
 		(s.board[2] == CellX && s.board[5] == CellX && s.board[8] == CellX) ||
-
 		(s.board[0] == CellX && s.board[4] == CellX && s.board[8] == CellX) ||
 		(s.board[2] == CellX && s.board[4] == CellX && s.board[6] == CellX)
 
 	o := (s.board[0] == CellO && s.board[1] == CellO && s.board[2] == CellO) ||
 		(s.board[3] == CellO && s.board[4] == CellO && s.board[5] == CellO) ||
 		(s.board[6] == CellO && s.board[7] == CellO && s.board[8] == CellO) ||
-
 		(s.board[0] == CellO && s.board[3] == CellO && s.board[6] == CellO) ||
 		(s.board[1] == CellO && s.board[4] == CellO && s.board[7] == CellO) ||
 		(s.board[2] == CellO && s.board[5] == CellO && s.board[8] == CellO) ||
-
 		(s.board[0] == CellO && s.board[4] == CellO && s.board[8] == CellO) ||
 		(s.board[2] == CellO && s.board[4] == CellO && s.board[6] == CellO)
 
@@ -97,58 +129,42 @@ func (s *State) Score(xIsPlayer bool) int {
 
 	switch {
 	case x && !o:
-		if xIsPlayer {
+		if s.Player == CellX {
 			return 10
 		} else {
 			return -10
 		}
 	case o && !x:
-		if xIsPlayer {
+		if s.Player == CellX {
 			return -10
 		} else {
 			return 10
 		}
 	case !freeCellsLeft:
-		return -1
+		return 1
 	default:
 		return 0
 	}
 }
 
-func (s *State) NextStates(isX bool) []adversarial.GameState {
+func (s *State) NextStates() []adversarial.GameState {
 	var newStates []adversarial.GameState
 	for i, cell := range s.board {
 		if cell == CellBlank {
-			n := s.Clone()
-			if isX {
-				n.board[i] = CellX
-			} else {
-				n.board[i] = CellO
-			}
+			n := s.Play(i)
 			newStates = append(newStates, n)
 		}
 	}
 	return newStates
 }
 
-func (s *State) FindBest(player Cell) (bestVal int, bestMove int) {
-	bestVal = -1000
-	bestMove = -1
-
-	for x := 0; x < 3; x++ {
-		for y := 0; y < 3; y++ {
-			if s.At(x, y) == CellBlank {
-				s.Set(x, y, player)
-				moveValue := adversarial.Minimax(s, 1000, player == CellX)
-				s.Set(x, y, CellBlank)
-
-				if moveValue > bestVal {
-					bestMove = width*y+x
-					bestVal = moveValue
-				}
-			}
+func (s *State) BestMove() int {
+	best := adversarial.Minimax(s, 1000)
+	var legalMoves []int
+	for i := range s.board {
+		if s.Index(i) == CellBlank {
+			legalMoves = append(legalMoves, i)
 		}
 	}
-
-	return bestVal, bestMove
+	return legalMoves[best]
 }

@@ -4,48 +4,59 @@ import "math"
 
 type GameState interface {
 	IsGameOver() bool
-	Score(maximizingPlayer bool) int
-	NextStates(maximizingPlayer bool) []GameState
+	Score() int
+	NextStates() []GameState
 }
 
 // Minimax implements depth-limited minimax with alpha-beta pruning.
 // maximizingPlayer should be true if the player goes first (X in TicTacToe or White in chess)
-func Minimax(root GameState, maxDepth int, maximizingPlayer bool) int {
-	return minimax(root, maxDepth, math.MinInt64, math.MaxInt64, maximizingPlayer)
+func Minimax(state GameState, maxDepth int) int {
+	move, _ := minimax(state, 0, maxDepth, math.MinInt64, math.MaxInt64, true)
+	return move
 }
 
 // depth is the maximum depth to examine
 // alpha represents the minimum score that the maximizing player is assured of
 // beta represents the maximum score that the minimizing player is assured of
 // Initially, alpha should be set to negative infinity and beta positive infinity.
-func minimax(node GameState, depth, alpha, beta int, maximizingPlayer bool) int {
-	if depth == 0 || node.IsGameOver() {
-		return node.Score(maximizingPlayer)
+func minimax(state GameState, depth, maxDepth, alpha, beta int, maximizingPlayer bool) (int, int) {
+	if depth == maxDepth || state.IsGameOver() {
+		return -1, state.Score()-depth
 	}
 	if maximizingPlayer {
 		value := math.MinInt64
-		children := node.NextStates(maximizingPlayer)
+		move := -1
+		children := state.NextStates()
 		for i := range children {
 			child := children[i]
-			value = max(value, minimax(child, depth-1, alpha, beta, false))
+			_, newValue := minimax(child, depth+1, maxDepth, alpha, beta, false)
+			value = max(value, newValue)
+			if value == newValue {
+				move = i
+			}
 			if value >= beta {
 				break // beta pruning
 			}
 			alpha = max(alpha, value)
 		}
-		return value
+		return move, value
 	} else {
 		value := math.MaxInt64
-		children := node.NextStates(maximizingPlayer)
+		move := -1
+		children := state.NextStates()
 		for i := range children {
 			child := children[i]
-			value = min(value, minimax(child, depth-1, alpha, beta, true))
+			_, newValue := minimax(child, depth+1, maxDepth, alpha, beta, true)
+			value = min(value, newValue)
+			if value == newValue {
+				move = i
+			}
 			if value <= alpha {
 				break // alpha pruning
 			}
 			beta = min(beta, value)
 		}
-		return value
+		return move, value
 	}
 }
 
