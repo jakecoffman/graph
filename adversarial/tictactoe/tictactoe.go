@@ -34,7 +34,6 @@ type State struct {
 	board     []Cell
 	Current   Cell
 	Player    Cell
-	CreatedBy int
 }
 
 func NewState(player Cell) *State {
@@ -42,7 +41,6 @@ func NewState(player Cell) *State {
 		board:     make([]Cell, width*height),
 		Player:    player,
 		Current:   CellX,
-		CreatedBy: -1,
 	}
 }
 
@@ -80,7 +78,6 @@ func (s *State) Play(i int) *State {
 		log.Panicln("Illegal move", i)
 	}
 	n := s.Clone()
-	n.CreatedBy = i
 	n.board[i] = n.Current
 	if n.Current == CellX {
 		n.Current = CellO
@@ -88,15 +85,6 @@ func (s *State) Play(i int) *State {
 		n.Current = CellX
 	}
 	return n
-}
-
-func (s *State) Undo(i int) {
-	s.board[i] = CellBlank
-	if s.Current == CellX {
-		s.Current = CellO
-	} else {
-		s.Current = CellX
-	}
 }
 
 func (s *State) IsGameOver() bool {
@@ -123,24 +111,27 @@ func (s *State) Score() int {
 		(s.board[0] == CellO && s.board[4] == CellO && s.board[8] == CellO) ||
 		(s.board[2] == CellO && s.board[4] == CellO && s.board[6] == CellO)
 
-	freeCellsLeft := s.board[0] == CellBlank || s.board[1] == CellBlank || s.board[2] == CellBlank ||
-		s.board[3] == CellBlank || s.board[4] == CellBlank || s.board[5] == CellBlank ||
-		s.board[6] == CellBlank || s.board[7] == CellBlank || s.board[8] == CellBlank
+	var freeCellsLeft int
+	for i := range s.board {
+		if s.board[i] == CellBlank {
+			freeCellsLeft++
+		}
+	}
 
 	switch {
 	case x && !o:
 		if s.Player == CellX {
-			return 10
+			return 20
 		} else {
-			return -10
+			return -20
 		}
 	case o && !x:
 		if s.Player == CellX {
-			return -10
+			return -20
 		} else {
-			return 10
+			return 20
 		}
-	case !freeCellsLeft:
+	case freeCellsLeft == 0:
 		return 1
 	default:
 		return 0

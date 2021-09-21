@@ -22,7 +22,7 @@ func TestNextStates(t *testing.T) {
 	//t.Log(nextStates)
 }
 
-func TestMinimax(t *testing.T) {
+func TestMinimax_Endgame(t *testing.T) {
 	ticTacToe := NewState(CellX)
 	ticTacToe.Set(0, 0, CellX)
 	ticTacToe.Set(1, 0, CellO)
@@ -30,7 +30,6 @@ func TestMinimax(t *testing.T) {
 	ticTacToe.Set(0, 1, CellO)
 	ticTacToe.Set(1, 1, CellO)
 	ticTacToe.Set(2, 1, CellX)
-
 	//t.Log(ticTacToe.String())
 	// X │ O │ X
 	//───┼───┼───
@@ -55,6 +54,29 @@ func TestMinimax(t *testing.T) {
 			ticTacToe.board[bestMove] = CellO
 			t.Log(ticTacToe.String())
 			t.Fatalf("Expected %v got %v", 7, bestMove)
+		}
+	})
+}
+
+func TestMinimax_Block(t *testing.T) {
+	ticTacToe := NewState(CellX)
+	ticTacToe.Set(0, 0, CellX)
+	ticTacToe.Current = CellO
+	//t.Log(ticTacToe.String())
+	// X │   │
+	//───┼───┼───
+	//   │   │
+	//───┼───┼───
+	//   │   │
+	// best move for O should be 4 (1,1)
+
+	// This test fails, it should go center but does not.
+	t.Run("O should block X", func(t *testing.T) {
+		bestMove := ticTacToe.BestMove()
+		if bestMove != 4 {
+			ticTacToe.board[bestMove] = CellO
+			t.Log(ticTacToe.String())
+			t.Fatalf("Expected %v got %v", 4, bestMove)
 		}
 	})
 }
