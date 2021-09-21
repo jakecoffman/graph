@@ -13,9 +13,7 @@ Featuring:
 - Beam search
 - Chokudai search
 - Monte Carlo Tree Search (MCTS)
-
-Coming soon:
-- Minimax
+- Minimax (with alpha-beta pruning)
 
 ## Usage
 
@@ -30,6 +28,10 @@ start to goal.
 
 The `optimization` directory contains algorithms that find an optimal solution
 to a problem that doesn't have a single clear goal.
+
+## Adversarial
+
+The `adversarial` directory contains algorithms that require an opponent.
 
 ## Bitset
 
