@@ -151,7 +151,7 @@ func (s *State) NextStates() []adversarial.GameState {
 }
 
 func (s *State) BestMove() int {
-	best := adversarial.Minimax(s)
+	best := adversarial.Minimax(s, 1000)
 
 	// now we must figure out what move this actually was
 	var legalMoves []int
