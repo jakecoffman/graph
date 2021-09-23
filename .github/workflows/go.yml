@@ -29,6 +29,8 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+        ls
+        pwd
 
     - name: Build
       run: cd graph && go build -v ./..
