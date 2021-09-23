@@ -60,8 +60,7 @@ func TestMinimax_Endgame(t *testing.T) {
 
 func TestMinimax_Block(t *testing.T) {
 	ticTacToe := NewState(CellX)
-	ticTacToe.Set(0, 0, CellX)
-	ticTacToe.Current = CellO
+	ticTacToe = ticTacToe.Play(0)
 	//t.Log(ticTacToe.String())
 	// X │   │
 	//───┼───┼───
@@ -72,6 +71,7 @@ func TestMinimax_Block(t *testing.T) {
 
 	// This test fails, it should go center but does not.
 	t.Run("O should block X", func(t *testing.T) {
+		ticTacToe.Player = CellO
 		bestMove := ticTacToe.BestMove()
 		if bestMove != 4 {
 			ticTacToe.board[bestMove] = CellO
@@ -79,4 +79,26 @@ func TestMinimax_Block(t *testing.T) {
 			t.Fatalf("Expected %v got %v", 4, bestMove)
 		}
 	})
+}
+
+func TestMinimax_Every_Move(t *testing.T) {
+	for i := 0; i < 9; i++ {
+		game := NewState(CellX)
+		game = game.Play(i)
+
+		for !game.IsGameOver() {
+			if game.Player == CellX {
+				game.Player = CellO
+			} else {
+				game.Player = CellX
+			}
+			bestMove := game.BestMove()
+			game = game.Play(bestMove)
+		}
+
+		// every game should draw
+		if game.Score() != 0 {
+			t.Error("Failed to tie", i)
+		}
+	}
 }

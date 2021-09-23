@@ -61,7 +61,7 @@ func main() {
 
 	fmt.Println(state)
 	score := state.Score()
-	if score == 1 {
+	if score == 0 {
 		fmt.Println("TIE!")
 	} else if score < 0 {
 		fmt.Println("LOSE")

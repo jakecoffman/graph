@@ -32,7 +32,9 @@ const (
 
 type State struct {
 	board     []Cell
+	// Current is the player that needs to make a move next
 	Current   Cell
+	// Player is the maximizer: they want to maximize their score
 	Player    Cell
 }
 
@@ -89,7 +91,16 @@ func (s *State) Play(i int) *State {
 
 func (s *State) IsGameOver() bool {
 	score := s.Score()
-	return score != 0
+	if score != 0 {
+		return true
+	}
+	var freeCellsLeft int
+	for i := range s.board {
+		if s.board[i] == CellBlank {
+			freeCellsLeft++
+		}
+	}
+	return freeCellsLeft == 0
 }
 
 func (s *State) Score() int {
@@ -111,31 +122,21 @@ func (s *State) Score() int {
 		(s.board[0] == CellO && s.board[4] == CellO && s.board[8] == CellO) ||
 		(s.board[2] == CellO && s.board[4] == CellO && s.board[6] == CellO)
 
-	var freeCellsLeft int
-	for i := range s.board {
-		if s.board[i] == CellBlank {
-			freeCellsLeft++
-		}
-	}
-
-	switch {
-	case x && !o:
+	if x {
 		if s.Player == CellX {
 			return 20
 		} else {
 			return -20
 		}
-	case o && !x:
+	}
+	if o {
 		if s.Player == CellX {
 			return -20
 		} else {
 			return 20
 		}
-	case freeCellsLeft == 0:
-		return 1
-	default:
-		return 0
 	}
+	return 0
 }
 
 func (s *State) NextStates() []adversarial.GameState {
@@ -150,7 +151,9 @@ func (s *State) NextStates() []adversarial.GameState {
 }
 
 func (s *State) BestMove() int {
-	best := adversarial.Minimax(s, 1000)
+	best := adversarial.Minimax(s)
+
+	// now we must figure out what move this actually was
 	var legalMoves []int
 	for i := range s.board {
 		if s.Index(i) == CellBlank {
