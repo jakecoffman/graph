@@ -5,6 +5,7 @@ import (
 	"github.com/jakecoffman/graph/adversarial"
 	"log"
 	"strings"
+	"time"
 )
 
 type Cell int
@@ -151,7 +152,12 @@ func (s *State) NextStates() []adversarial.GameState {
 }
 
 func (s *State) BestMove() int {
-	best := adversarial.Negamax(s, 1000)
+	// iterative deepening (not needed for TicTacToe, here for learning purposes)
+	start := time.Now()
+	var best int
+	for distance := 1; distance < 1000 && time.Now().Sub(start) < 100*time.Millisecond; distance++ {
+		best = adversarial.Negamax(s, 1000)
+	}
 
 	// now we must figure out what move this actually was
 	var legalMoves []int
