@@ -162,3 +162,7 @@ func (s *State) BestMove() int {
 	}
 	return legalMoves[best]
 }
+
+func (s *State) Hash() string {
+	return fmt.Sprintf("%v%v%v", s.board, s.Player, s.Current)
+}
