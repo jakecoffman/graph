@@ -13,7 +13,7 @@ func TestNextStates(t *testing.T) {
 	ticTacToe.Set(1, 1, CellO)
 	ticTacToe.Set(2, 1, CellX)
 
-	t.Log(ticTacToe.String())
+	//t.Log(ticTacToe.String())
 
 	nextStates := ticTacToe.NextStates()
 	if len(nextStates) != 3 {

@@ -13,7 +13,7 @@ Featuring:
 - Beam search
 - Chokudai search
 - Monte Carlo Tree Search (MCTS)
-- Minimax (with alpha-beta pruning)
+- Minimax (depth-limited Negamax with alpha-beta pruning)
 
 ## Usage
 
