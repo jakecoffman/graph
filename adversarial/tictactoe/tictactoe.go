@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jakecoffman/graph/adversarial"
 	"log"
+	"math/rand"
 	"strings"
 	"time"
 )
@@ -169,6 +170,46 @@ func (s *State) BestMove() int {
 	return legalMoves[best]
 }
 
-func (s *State) Hash() string {
-	return fmt.Sprintf("%v%v%v", s.board, s.Player, s.Current)
+var ZobristTable [3][3][2]uint64
+var currentIsX uint64
+var playerIsX uint64
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+
+	currentIsX = rand.Uint64()
+	playerIsX = rand.Uint64()
+
+	for x := 0; x < 3; x++ {
+		for y := 0; y < 3; y++ {
+			// p represents the player X or O
+			for p := 0; p < 2; p++ {
+				ZobristTable[x][y][p] = rand.Uint64()
+			}
+		}
+	}
+}
+
+func (s *State) Hash() uint64 {
+	var hash uint64
+
+	if s.Player == CellX {
+		hash ^= playerIsX
+	}
+	if s.Current == CellX {
+		hash ^= currentIsX
+	}
+
+	for x := 0; x < 3; x++ {
+		for y := 0; y < 3; y++ {
+			cell := s.At(x, y)
+			if cell == CellX {
+				hash ^= ZobristTable[x][y][0]
+			} else if cell == CellO {
+				hash ^= ZobristTable[x][y][1]
+			}
+		}
+	}
+
+	return hash
 }

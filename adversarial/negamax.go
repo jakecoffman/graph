@@ -14,8 +14,8 @@ type GameState interface {
 	// NextStates returns a list of possible next game states.
 	NextStates() []GameState
 	// Hash returns a hashable value for the game state so that
-	// repeated states can be found by a map lookup.
-	Hash() string
+	// repeated states can be found by a map lookup. Google "Zobrist Hash".
+	Hash() uint64
 }
 
 // Negamax implements depth-limited negamax with alpha-beta pruning and transposition tables.
@@ -46,7 +46,7 @@ type result struct {
 	move, value int
 }
 
-var transpositionTable = map[string]entry{}
+var transpositionTable = map[uint64]entry{}
 
 type flag int
 
