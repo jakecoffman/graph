@@ -5,7 +5,7 @@ import (
 )
 
 func TestNextStates(t *testing.T) {
-	ticTacToe := NewState(CellX)
+	ticTacToe := NewState()
 	ticTacToe.Set(0, 0, CellX)
 	ticTacToe.Set(1, 0, CellO)
 	ticTacToe.Set(2, 0, CellX)
@@ -15,7 +15,7 @@ func TestNextStates(t *testing.T) {
 
 	//t.Log(ticTacToe.String())
 
-	nextStates := ticTacToe.NextStates()
+	nextStates := ticTacToe.NextStates(1)
 	if len(nextStates) != 3 {
 		t.Fatal(len(nextStates))
 	}
@@ -23,14 +23,14 @@ func TestNextStates(t *testing.T) {
 }
 
 func TestMinimax_Endgame(t *testing.T) {
-	ticTacToe := NewState(CellX)
-	ticTacToe.Set(0, 0, CellX)
-	ticTacToe.Set(1, 0, CellO)
-	ticTacToe.Set(2, 0, CellX)
-	ticTacToe.Set(0, 1, CellO)
-	ticTacToe.Set(1, 1, CellO)
-	ticTacToe.Set(2, 1, CellX)
-	//t.Log(ticTacToe.String())
+	ticTacToe := NewState()
+	ticTacToe = ticTacToe.Play(0, CellX).
+		Play(1, CellO).
+		Play(2, CellX).
+		Play(3, CellO).
+		Play(5, CellX).
+		Play(4, CellO)
+	t.Log(ticTacToe)
 	// X │ O │ X
 	//───┼───┼───
 	// O │ O │ X
@@ -40,16 +40,14 @@ func TestMinimax_Endgame(t *testing.T) {
 	// best move for O should be 7 (1,2)
 
 	t.Run("Best move for X", func(t *testing.T) {
-		bestMove := ticTacToe.BestMove()
+		bestMove := ticTacToe.BestMove(CellX)
 		if bestMove != 8 {
 			t.Fatalf("Expected %v got %v", width*2+2, bestMove)
 		}
 	})
 
 	t.Run("Best move for O", func(t *testing.T) {
-		ticTacToe.Current = CellO
-		ticTacToe.Player = CellO
-		bestMove := ticTacToe.BestMove()
+		bestMove := ticTacToe.BestMove(CellO)
 		if bestMove != 7 {
 			ticTacToe.board[bestMove] = CellO
 			t.Log(ticTacToe.String())
@@ -59,8 +57,8 @@ func TestMinimax_Endgame(t *testing.T) {
 }
 
 func TestMinimax_Block(t *testing.T) {
-	ticTacToe := NewState(CellX)
-	ticTacToe = ticTacToe.Play(0)
+	ticTacToe := NewState()
+	ticTacToe = ticTacToe.Play(0, CellX)
 	//t.Log(ticTacToe.String())
 	// X │   │
 	//───┼───┼───
@@ -71,8 +69,7 @@ func TestMinimax_Block(t *testing.T) {
 
 	// This test fails, it should go center but does not.
 	t.Run("O should block X", func(t *testing.T) {
-		ticTacToe.Player = CellO
-		bestMove := ticTacToe.BestMove()
+		bestMove := ticTacToe.BestMove(CellO)
 		if bestMove != 4 {
 			ticTacToe.board[bestMove] = CellO
 			t.Log(ticTacToe.String())
@@ -82,18 +79,21 @@ func TestMinimax_Block(t *testing.T) {
 }
 
 func TestMinimax_Every_Move(t *testing.T) {
+	color := CellX
+
 	for i := 0; i < 9; i++ {
-		game := NewState(CellX)
-		game = game.Play(i)
+		game := NewState()
+		game = game.Play(i, color)
 
 		for !game.IsGameOver() {
-			if game.Player == CellX {
-				game.Player = CellO
+			color = -color
+			if color == 1 {
+				bestMove := game.BestMove(CellX)
+				game = game.Play(bestMove, color)
 			} else {
-				game.Player = CellX
+				bestMove := game.BestMove(CellO)
+				game = game.Play(bestMove, color)
 			}
-			bestMove := game.BestMove()
-			game = game.Play(bestMove)
 		}
 
 		// every game should draw

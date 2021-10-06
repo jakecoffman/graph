@@ -22,9 +22,9 @@ func (c Cell) String() string {
 }
 
 const (
-	CellBlank = Cell(iota)
-	CellX
-	CellO
+	CellBlank = 0
+	CellX = 1
+	CellO = -1
 )
 
 const (
@@ -34,17 +34,11 @@ const (
 
 type State struct {
 	board     []Cell
-	// Current is the player that needs to make a move next
-	Current   Cell
-	// Player is the maximizer: they want to maximize their score
-	Player    Cell
 }
 
-func NewState(player Cell) *State {
+func NewState() *State {
 	return &State{
 		board:     make([]Cell, width*height),
-		Player:    player,
-		Current:   CellX,
 	}
 }
 
@@ -59,9 +53,8 @@ func (s *State) String() string {
 }
 
 func (s *State) Clone() *State {
-	newState := NewState(s.Player)
+	newState := NewState()
 	copy(newState.board, s.board)
-	newState.Current = s.Current
 	return newState
 }
 
@@ -77,17 +70,12 @@ func (s *State) Index(i int) Cell {
 	return s.board[i]
 }
 
-func (s *State) Play(i int) *State {
-	if s.board[i] != CellBlank {
-		log.Panicln("Illegal move", i)
+func (s *State) Play(index, color int) *State {
+	if s.board[index] != CellBlank {
+		log.Panicln("Illegal move", index)
 	}
 	n := s.Clone()
-	n.board[i] = n.Current
-	if n.Current == CellX {
-		n.Current = CellO
-	} else {
-		n.Current = CellX
-	}
+	n.board[index] = Cell(color)
 	return n
 }
 
@@ -125,39 +113,31 @@ func (s *State) Score() int {
 		(s.board[2] == CellO && s.board[4] == CellO && s.board[6] == CellO)
 
 	if x {
-		if s.Player == CellX {
-			return 20
-		} else {
-			return -20
-		}
+		return 20
 	}
 	if o {
-		if s.Player == CellX {
-			return -20
-		} else {
-			return 20
-		}
+		return -20
 	}
 	return 0
 }
 
-func (s *State) NextStates() []adversarial.GameState {
+func (s *State) NextStates(color int) []adversarial.GameState {
 	var newStates []adversarial.GameState
 	for i, cell := range s.board {
 		if cell == CellBlank {
-			n := s.Play(i)
+			n := s.Play(i, color)
 			newStates = append(newStates, n)
 		}
 	}
 	return newStates
 }
 
-func (s *State) BestMove() int {
+func (s *State) BestMove(color int) int {
 	// iterative deepening (not needed for TicTacToe, here for learning purposes)
 	start := time.Now()
 	var best int
-	for distance := 1; distance < 1000 && time.Now().Sub(start) < 100*time.Millisecond; distance++ {
-		best = adversarial.Negamax(s, 1000)
+	for distance := 1; distance < 100 && time.Now().Sub(start) < 100*time.Millisecond; distance++ {
+		best = adversarial.Negamax(s, 100, color)
 	}
 
 	// now we must figure out what move this actually was
@@ -172,13 +152,11 @@ func (s *State) BestMove() int {
 
 var ZobristTable [3][3][2]uint64
 var currentIsX uint64
-var playerIsX uint64
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
 	currentIsX = rand.Uint64()
-	playerIsX = rand.Uint64()
 
 	for x := 0; x < 3; x++ {
 		for y := 0; y < 3; y++ {
@@ -190,13 +168,10 @@ func init() {
 	}
 }
 
-func (s *State) Hash() uint64 {
+func (s *State) Hash(color int) uint64 {
 	var hash uint64
 
-	if s.Player == CellX {
-		hash ^= playerIsX
-	}
-	if s.Current == CellX {
+	if color == CellX {
 		hash ^= currentIsX
 	}
 

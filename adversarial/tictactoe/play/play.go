@@ -37,10 +37,11 @@ func main() {
 		player = tictactoe.CellX
 	}
 
-	state := tictactoe.NewState(player)
+	state := tictactoe.NewState()
+	turn := tictactoe.CellX
 
 	for !state.IsGameOver() {
-		if player == state.Current {
+		if player == turn {
 			fmt.Println(state)
 			fmt.Println("Enter index to move: ")
 			str = input.Read()
@@ -49,14 +50,12 @@ func main() {
 			if state.Index(i) != tictactoe.CellBlank {
 				continue
 			}
-			state = state.Play(i)
+			state = state.Play(i, player)
 		} else {
-			tmp := state.Player
-			state.Player = state.Current
-			move := state.BestMove()
-			state = state.Play(move)
-			state.Player = tmp
+			move := state.BestMove(-player)
+			state = state.Play(move, -player)
 		}
+		turn = -turn
 	}
 
 	fmt.Println(state)
