@@ -15,21 +15,21 @@ func TestNextStates(t *testing.T) {
 
 	//t.Log(ticTacToe.String())
 
-	nextStates := ticTacToe.NextStates(1)
-	if len(nextStates) != 3 {
-		t.Fatal(len(nextStates))
+	nextMoves := ticTacToe.NextMoves()
+	if len(nextMoves) != 3 {
+		t.Fatal(len(nextMoves))
 	}
-	//t.Log(nextStates)
+	//t.Log(nextMoves)
 }
 
 func TestMinimax_Endgame(t *testing.T) {
 	ticTacToe := NewState()
-	ticTacToe = ticTacToe.Play(0, CellX).
-		Play(1, CellO).
-		Play(2, CellX).
-		Play(3, CellO).
-		Play(5, CellX).
-		Play(4, CellO)
+	ticTacToe.Play(0, CellX)
+	ticTacToe.Play(1, CellO)
+	ticTacToe.Play(2, CellX)
+	ticTacToe.Play(3, CellO)
+	ticTacToe.Play(5, CellX)
+	ticTacToe.Play(4, CellO)
 	t.Log(ticTacToe)
 	// X │ O │ X
 	//───┼───┼───
@@ -58,7 +58,7 @@ func TestMinimax_Endgame(t *testing.T) {
 
 func TestMinimax_Block(t *testing.T) {
 	ticTacToe := NewState()
-	ticTacToe = ticTacToe.Play(0, CellX)
+	ticTacToe.Play(0, CellX)
 	//t.Log(ticTacToe.String())
 	// X │   │
 	//───┼───┼───
@@ -83,16 +83,16 @@ func TestMinimax_Every_Move(t *testing.T) {
 
 	for i := 0; i < 9; i++ {
 		game := NewState()
-		game = game.Play(i, color)
+		game.Play(i, color)
 
 		for !game.IsGameOver() {
 			color = -color
 			if color == 1 {
 				bestMove := game.BestMove(CellX)
-				game = game.Play(bestMove, color)
+				game.Play(bestMove, color)
 			} else {
 				bestMove := game.BestMove(CellO)
-				game = game.Play(bestMove, color)
+				game.Play(bestMove, color)
 			}
 		}
 

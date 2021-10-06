@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jakecoffman/graph/adversarial"
 	"log"
+	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -23,8 +24,8 @@ func (c Cell) String() string {
 
 const (
 	CellBlank = 0
-	CellX = 1
-	CellO = -1
+	CellX     = 1
+	CellO     = -1
 )
 
 const (
@@ -33,12 +34,12 @@ const (
 )
 
 type State struct {
-	board     []Cell
+	board []Cell
 }
 
 func NewState() *State {
 	return &State{
-		board:     make([]Cell, width*height),
+		board: make([]Cell, width*height),
 	}
 }
 
@@ -50,12 +51,6 @@ func (s *State) String() string {
 	str.WriteString("───┼───┼───\n")
 	str.WriteString(fmt.Sprintf(" %v │ %v │ %v ", s.board[6], s.board[7], s.board[8]))
 	return str.String()
-}
-
-func (s *State) Clone() *State {
-	newState := NewState()
-	copy(newState.board, s.board)
-	return newState
 }
 
 func (s *State) At(x, y int) Cell {
@@ -70,13 +65,15 @@ func (s *State) Index(i int) Cell {
 	return s.board[i]
 }
 
-func (s *State) Play(index, color int) *State {
+func (s *State) Play(index, color int) {
 	if s.board[index] != CellBlank {
 		log.Panicln("Illegal move", index)
 	}
-	n := s.Clone()
-	n.board[index] = Cell(color)
-	return n
+	s.board[index] = Cell(color)
+}
+
+func (s *State) Undo(index, color int) {
+	s.board[index] = CellBlank
 }
 
 func (s *State) IsGameOver() bool {
@@ -121,12 +118,11 @@ func (s *State) Score() int {
 	return 0
 }
 
-func (s *State) NextStates(color int) []adversarial.GameState {
-	var newStates []adversarial.GameState
+func (s *State) NextMoves() []int {
+	var newStates []int
 	for i, cell := range s.board {
 		if cell == CellBlank {
-			n := s.Play(i, color)
-			newStates = append(newStates, n)
+			newStates = append(newStates, i)
 		}
 	}
 	return newStates
@@ -135,19 +131,17 @@ func (s *State) NextStates(color int) []adversarial.GameState {
 func (s *State) BestMove(color int) int {
 	// iterative deepening (not needed for TicTacToe, here for learning purposes)
 	start := time.Now()
-	var best int
+	bestMove := -1
+	bestValue := math.MinInt64
 	for distance := 1; distance < 100 && time.Now().Sub(start) < 100*time.Millisecond; distance++ {
-		best = adversarial.Negamax(s, 100, color)
-	}
-
-	// now we must figure out what move this actually was
-	var legalMoves []int
-	for i := range s.board {
-		if s.Index(i) == CellBlank {
-			legalMoves = append(legalMoves, i)
+		move, value := adversarial.Negamax(s, 100, color)
+		if value > bestValue {
+			bestValue = value
+			bestMove = move
 		}
 	}
-	return legalMoves[best]
+
+	return bestMove
 }
 
 var ZobristTable [3][3][2]uint64
@@ -169,6 +163,7 @@ func init() {
 }
 
 func (s *State) Hash(color int) uint64 {
+	// TODO update this incrementally instead of generating from scratch each time
 	var hash uint64
 
 	if color == CellX {

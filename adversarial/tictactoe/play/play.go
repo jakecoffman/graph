@@ -50,10 +50,10 @@ func main() {
 			if state.Index(i) != tictactoe.CellBlank {
 				continue
 			}
-			state = state.Play(i, player)
+			state.Play(i, player)
 		} else {
 			move := state.BestMove(-player)
-			state = state.Play(move, -player)
+			state.Play(move, -player)
 		}
 		turn = -turn
 	}
