@@ -4,34 +4,41 @@ import (
 	"container/heap"
 )
 
-// UCS or Dijkstra is like BFS but takes cost into account.
+// UCS or Dijkstra is like BFS but takes cost into account by examining
+// lower cost routes.
 func UCS(start, goal *Node) (path []*Node, found bool) {
-	frontier := &PriorityQueue{}
-	heap.Push(frontier, &Item{
+	// keeps it sorted by priority (low-to-high: min-heap)
+	pq := &PriorityQueue{}
+	// push the first item into the pq
+	heap.Push(pq, &Item{
 		Node:     start,
 		Priority: 0,
 	})
-	cameFrom := map[*Node]*Node{}
-	costSoFar := map[*Node]int{}
-	cameFrom[start] = nil
-	costSoFar[start] = 0
+	cameFrom := map[*Node]*Node{
+		start: nil,
+	}
+	costSoFar := map[*Node]int{
+		start: 0,
+	}
 
-	for !frontier.Empty() {
-		current := heap.Pop(frontier).(*Item)
+	for !pq.Empty() {
+		current := heap.Pop(pq).(*Item)
 
 		if current.Node == goal {
 			found = true
 			break
 		}
 
+		// push all neighbors into the pq
 		for _, next := range current.Neighbors {
+			// cost is cost of current node plus the next cost
 			newCost := costSoFar[current.Node] + Costs[next.Kind]
+			// if we haven't seen this node yet OR we have but this path was better...
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				priority := newCost
-				heap.Push(frontier, &Item{
+				heap.Push(pq, &Item{
 					Node:     next,
-					Priority: priority,
+					Priority: newCost,
 				})
 				cameFrom[next] = current.Node
 			}

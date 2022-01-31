@@ -6,10 +6,10 @@ Graph (and Tree) algorithms in Go.
 ![Build](https://github.com/jakecoffman/graph/actions/workflows/go.yml/badge.svg?branch=master)
 
 Featuring:
+- Uniform Cost Search (UCS or Dijkstra’s Algorithm)
 - A* (Astar)
 - Breadth First Search
 - Depth First Search
-- Uniform Cost Search (UCS or Dijkstra’s Algorithm)
 - Beam search
 - Chokudai search
 - Monte Carlo Tree Search (MCTS)

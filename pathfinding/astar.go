@@ -5,18 +5,19 @@ import (
 	"github.com/jakecoffman/graph"
 )
 
-// Astar or A* is like BFS but only considers the highest priority node first.
-// It does this by applying a heuristic to tell which states are better.
+// Astar (or A*) is UCS but applies a heuristic to tell which states are better.
 func Astar(start, goal *Node) (path []*Node, found bool) {
 	frontier := &PriorityQueue{}
 	heap.Push(frontier, &Item{
 		Node:     start,
 		Priority: 0,
 	})
-	cameFrom := map[*Node]*Node{}
-	costSoFar := map[*Node]int{}
-	cameFrom[start] = nil
-	costSoFar[start] = 0
+	cameFrom := map[*Node]*Node{
+		start: nil,
+	}
+	costSoFar := map[*Node]int{
+		start: 0,
+	}
 
 	for !frontier.Empty() {
 		current := heap.Pop(frontier).(*Item)
@@ -30,7 +31,9 @@ func Astar(start, goal *Node) (path []*Node, found bool) {
 			newCost := costSoFar[current.Node] + Costs[next.Kind]
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				priority := newCost + graph.ManhattanDistance(goal.Pos, next.Pos)
+				priority := newCost
+				// this next line is the only difference between UCS and astar
+				priority += graph.ManhattanDistance(goal.Pos, next.Pos)
 				heap.Push(frontier, &Item{
 					Node:     next,
 					Priority: priority,
