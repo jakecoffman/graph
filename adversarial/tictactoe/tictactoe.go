@@ -35,6 +35,7 @@ const (
 
 type State struct {
 	board []Cell
+	turn  Cell
 }
 
 func NewState() *State {
@@ -70,6 +71,7 @@ func (s *State) Play(index, color int) {
 		log.Panicln("Illegal move", index)
 	}
 	s.board[index] = Cell(color)
+	s.turn = -s.turn
 }
 
 func (s *State) Undo(index, color int) {
@@ -77,7 +79,7 @@ func (s *State) Undo(index, color int) {
 }
 
 func (s *State) IsGameOver() bool {
-	score := s.Score()
+	score := s.Score(1)
 	if score != 0 {
 		return true
 	}
@@ -90,31 +92,33 @@ func (s *State) IsGameOver() bool {
 	return freeCellsLeft == 0
 }
 
-func (s *State) Score() int {
-	x := (s.board[0] == CellX && s.board[1] == CellX && s.board[2] == CellX) ||
-		(s.board[3] == CellX && s.board[4] == CellX && s.board[5] == CellX) ||
-		(s.board[6] == CellX && s.board[7] == CellX && s.board[8] == CellX) ||
-		(s.board[0] == CellX && s.board[3] == CellX && s.board[6] == CellX) ||
-		(s.board[1] == CellX && s.board[4] == CellX && s.board[7] == CellX) ||
-		(s.board[2] == CellX && s.board[5] == CellX && s.board[8] == CellX) ||
-		(s.board[0] == CellX && s.board[4] == CellX && s.board[8] == CellX) ||
-		(s.board[2] == CellX && s.board[4] == CellX && s.board[6] == CellX)
+func (s *State) Score(color int) int {
+	player := Cell(color)
 
-	o := (s.board[0] == CellO && s.board[1] == CellO && s.board[2] == CellO) ||
-		(s.board[3] == CellO && s.board[4] == CellO && s.board[5] == CellO) ||
-		(s.board[6] == CellO && s.board[7] == CellO && s.board[8] == CellO) ||
-		(s.board[0] == CellO && s.board[3] == CellO && s.board[6] == CellO) ||
-		(s.board[1] == CellO && s.board[4] == CellO && s.board[7] == CellO) ||
-		(s.board[2] == CellO && s.board[5] == CellO && s.board[8] == CellO) ||
-		(s.board[0] == CellO && s.board[4] == CellO && s.board[8] == CellO) ||
-		(s.board[2] == CellO && s.board[4] == CellO && s.board[6] == CellO)
+	if (s.board[0] == player && s.board[1] == player && s.board[2] == player) ||
+		(s.board[3] == player && s.board[4] == player && s.board[5] == player) ||
+		(s.board[6] == player && s.board[7] == player && s.board[8] == player) ||
+		(s.board[0] == player && s.board[3] == player && s.board[6] == player) ||
+		(s.board[1] == player && s.board[4] == player && s.board[7] == player) ||
+		(s.board[2] == player && s.board[5] == player && s.board[8] == player) ||
+		(s.board[0] == player && s.board[4] == player && s.board[8] == player) ||
+		(s.board[2] == player && s.board[4] == player && s.board[6] == player) {
+		return 1
+	}
 
-	if x {
-		return 20
+	opp := -player
+
+	if (s.board[0] == opp && s.board[1] == opp && s.board[2] == opp) ||
+		(s.board[3] == opp && s.board[4] == opp && s.board[5] == opp) ||
+		(s.board[6] == opp && s.board[7] == opp && s.board[8] == opp) ||
+		(s.board[0] == opp && s.board[3] == opp && s.board[6] == opp) ||
+		(s.board[1] == opp && s.board[4] == opp && s.board[7] == opp) ||
+		(s.board[2] == opp && s.board[5] == opp && s.board[8] == opp) ||
+		(s.board[0] == opp && s.board[4] == opp && s.board[8] == opp) ||
+		(s.board[2] == opp && s.board[4] == opp && s.board[6] == opp) {
+		return -1
 	}
-	if o {
-		return -20
-	}
+
 	return 0
 }
 
