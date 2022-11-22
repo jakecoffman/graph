@@ -1,18 +1,18 @@
-package pathfinding
+package ds
 
 // Stack is First In Last Out
-type Stack []*Node
+type Stack[T any] []T
 
-func (s *Stack) Push(node *Node) {
+func (s *Stack[T]) Push(node T) {
 	*s = append(*s, node)
 }
 
-func (s *Stack) Pop() *Node {
+func (s *Stack[T]) Pop() T {
 	node := (*s)[len(*s)-1]
 	*s = (*s)[:len(*s)-1]
 	return node
 }
 
-func (s *Stack) Len() int {
+func (s *Stack[T]) Len() int {
 	return len(*s)
 }

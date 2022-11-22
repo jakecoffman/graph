@@ -1,9 +1,11 @@
 package pathfinding
 
+import "github.com/jakecoffman/graph/ds"
+
 // BFS explores the breadth of the tree before the depth.
 // The implementation is identical to DFS except BFS uses a Queue (FIFO).
 func BFS(start, goal *Node) (path []*Node, found bool) {
-	frontier := Queue{}
+	frontier := ds.Queue[*Node]{}
 	frontier.Put(start)
 	cameFrom := map[*Node]*Node{
 		start: nil,

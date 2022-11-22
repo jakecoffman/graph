@@ -1,78 +1,80 @@
 package pathfinding
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 )
 
-func Test_Astar1(t *testing.T) {
-	world := NewWorld(`
+func Test_Astar(t *testing.T) {
+	tests := []struct {
+		start    string
+		expected string
+	}{
+		{
+			start: `
 ########
 #    #G#
 #  # # #
 #S#    #
+########`,
+			expected: `
 ########
-`)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
-
-	path, found := Astar(start, goal)
-	if !found || len(path) != 11 {
-		t.Fatal(len(path))
-	}
-	fmt.Println(world.RenderPath(path))
-}
-
-func Test_Astar2(t *testing.T) {
-	world := NewWorld(`
+#xxxx#x#
+#x #x#x#
+#S# xxx#
+########`,
+		}, {
+			start: `
 ########
 #      #
 #  SG  #
 #      #
+########`,
+			expected: `
 ########
-`)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
-
-	path, found := Astar(start, goal)
-	if !found || len(path) != 1 {
-		t.Fatal(len(path))
-	}
-	fmt.Println(world.RenderPath(path))
-}
-
-func Test_Astar3(t *testing.T) {
-	world := NewWorld(`
+#      #
+#  Sx  #
+#      #
+########`,
+		}, {
+			start: `
 ########
 #      #
 #S ww G#
 #  w   #
+########`,
+			expected: `
 ########
-`)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
-
-	path, found := Astar(start, goal)
-	if !found || len(path) != 7 {
-		t.Fatal(len(path))
-	}
-	fmt.Println(world.RenderPath(path))
-}
-
-func Test_Astar_NoPath(t *testing.T) {
-	world := NewWorld(`
+# xxxx #
+#Sxwwxx#
+#  w   #
+########`,
+		}, {
+			start: `
 ########
 #     ##
 #S   #G#
 #     ##
 ########
-`)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
-
-	path, found := Astar(start, goal)
-	if found || len(path) != 0 {
-		t.Fatal(len(path))
+`,
+			expected: ``, // no path
+		},
 	}
-	fmt.Println(world.RenderPath(path))
+
+	for _, test := range tests {
+		world := NewWorld(test.start)
+		start := world.FindOne(Start)
+		goal := world.FindOne(Goal)
+
+		path, found := Astar(start, goal)
+		if len(test.expected) > 0 && !found {
+			t.Error("Expected path not found")
+		}
+		if !found {
+			continue
+		}
+		if world.RenderPath(path) != strings.TrimSpace(test.expected) {
+			t.Error(world.RenderPath(path))
+		}
+	}
 }

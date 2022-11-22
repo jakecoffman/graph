@@ -1,19 +1,18 @@
 package pathfinding
 
 import (
-	"container/heap"
+	"github.com/jakecoffman/graph/ds"
 )
 
 // UCS or Dijkstra is like BFS but takes cost into account by examining
 // lower cost routes.
 func UCS(start, goal *Node) (path []*Node, found bool) {
 	// keeps it sorted by priority (low-to-high: min-heap)
-	pq := &PriorityQueue{}
-	// push the first item into the pq
-	heap.Push(pq, &Item{
-		Node:     start,
-		Priority: 0,
+	pq := ds.NewHeap(func(a, b *Item) bool {
+		return a.Priority < b.Priority
 	})
+	// push the first item into the pq
+	pq.Push(&Item{Node: start, Priority: 0})
 	cameFrom := map[*Node]*Node{
 		start: nil,
 	}
@@ -21,8 +20,8 @@ func UCS(start, goal *Node) (path []*Node, found bool) {
 		start: 0,
 	}
 
-	for !pq.Empty() {
-		current := heap.Pop(pq).(*Item)
+	for pq.Len() > 0 {
+		current := pq.Pop()
 
 		if current.Node == goal {
 			found = true
@@ -36,10 +35,7 @@ func UCS(start, goal *Node) (path []*Node, found bool) {
 			// if we haven't seen this node yet OR we have but this path was better...
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				heap.Push(pq, &Item{
-					Node:     next,
-					Priority: newCost,
-				})
+				pq.Push(&Item{Node: next, Priority: newCost})
 				cameFrom[next] = current.Node
 			}
 		}

@@ -17,7 +17,7 @@ Featuring:
 
 ## Usage
 
-This is not a library, just copy and paste what you need into your own code.
+Consider this code unstable. Copy and paste what you need into your own code for stability!
 
 ## Pathfinding
 

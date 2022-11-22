@@ -1,9 +1,13 @@
 package pathfinding
 
+import (
+	"github.com/jakecoffman/graph/ds"
+)
+
 // DFS explores the depth of the tree/graph before the breadth.
 // The implementation is identical to BFS except it uses a stack (FILO).
 func DFS(start, goal *Node) (path []*Node, found bool) {
-	frontier := Stack{}
+	frontier := ds.Stack[*Node]{}
 	frontier.Push(start)
 	cameFrom := map[*Node]*Node{
 		start: nil,
