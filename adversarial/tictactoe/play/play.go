@@ -27,6 +27,7 @@ func (i *Input) Read() string {
 }
 
 func main() {
+	log.SetFlags(0)
 	input := NewInput()
 
 	fmt.Println("Do you want to go first? (Y|n)")
@@ -47,6 +48,9 @@ func main() {
 			str = input.Read()
 			i, err := strconv.Atoi(str)
 			check(err)
+			if i > 8 || i < 0 {
+				continue
+			}
 			if state.Index(i) != tictactoe.CellBlank {
 				continue
 			}

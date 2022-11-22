@@ -133,19 +133,33 @@ func (s *State) NextMoves() []int {
 }
 
 func (s *State) BestMove(color int) int {
-	// iterative deepening (not needed for TicTacToe, here for learning purposes)
-	start := time.Now()
-	bestMove := -1
-	bestValue := math.MinInt64
-	for distance := 1; distance < 100 && time.Now().Sub(start) < 100*time.Millisecond; distance++ {
-		move, value := adversarial.Negamax(s, 100, color)
-		if value > bestValue {
-			bestValue = value
-			bestMove = move
+	// to make it more interesting to play, we randomly choose winning moves
+	var winningMoves []int
+	var drawMoves []int
+	var losingMoves []int
+
+	log.Println("Next moves", len(s.NextMoves()))
+	for _, move := range s.NextMoves() {
+		s.Play(move, color)
+		value := adversarial.Negamax(s, 8, math.MinInt64, math.MaxInt64, -color)
+		s.Undo(move, color)
+		if value < 0 {
+			winningMoves = append(winningMoves, move)
+		} else if value == 0 {
+			drawMoves = append(drawMoves, move)
+		} else {
+			losingMoves = append(losingMoves, move)
 		}
 	}
 
-	return bestMove
+	log.Println(len(winningMoves), len(drawMoves), len(losingMoves))
+	if len(winningMoves) > 0 {
+		return winningMoves[rand.Intn(len(winningMoves))]
+	}
+	if len(drawMoves) > 0 {
+		return drawMoves[rand.Intn(len(drawMoves))]
+	}
+	return losingMoves[rand.Intn(len(losingMoves))]
 }
 
 var ZobristTable [3][3][2]uint64
