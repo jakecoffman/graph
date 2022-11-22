@@ -1,18 +1,18 @@
 package optimization
 
 import (
-	"container/heap"
+	"github.com/jakecoffman/graph/ds"
 	"log"
 	"time"
 )
 
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
 func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*Node) {
-	pqs := make([]*PriorityQueue, maxTurns+1)
-	for i := 0; i < len(pqs); i++ {
-		pqs[i] = &PriorityQueue{}
+	pqs := make([]*ds.Heap[*Item], maxTurns+1)
+	for i := 0; i < maxTurns+1; i++ {
+		pqs[i] = NewPriorityQueue()
 	}
-	heap.Push(pqs[0], &Item{
+	pqs[0].Push(&Item{
 		State:    start,
 		Priority: 0,
 	})
@@ -26,20 +26,20 @@ func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*N
 					break
 				}
 
-				item := heap.Pop(pqs[depth]).(*Item)
+				item := pqs[depth].Pop()
 				processed++
 				state := item.State
 
 				moves := state.PossibleNextMoves()
 				if len(moves) == 0 {
 					// terminal state
-					heap.Push(pqs[maxTurns], item)
+					pqs[maxTurns].Push(item)
 					continue
 				}
 
 				for _, move := range moves {
 					next := state.Apply(move)
-					heap.Push(pqs[depth+1], &Item{
+					pqs[depth+1].Push(&Item{
 						State:    next,
 						Priority: next.Evaluation(),
 					})
@@ -57,7 +57,7 @@ func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*N
 	if pqs[maxTurns].Len() == 0 {
 		return nil
 	}
-	best := heap.Pop(pqs[maxTurns]).(*Item).State
+	best := pqs[maxTurns].Pop().State
 
 	current := best
 	for current != start {

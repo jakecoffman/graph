@@ -1,18 +1,14 @@
 package optimization
 
 import (
-	"container/heap"
 	"time"
 )
 
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
 func Beam(start *State, beamSize int, limit time.Duration) []*Node {
-	beam := &PriorityQueue{}
-	heap.Push(beam, &Item{
-		State:    start,
-		Priority: 0,
-	})
-	nextStates := &PriorityQueue{}
+	beam := NewPriorityQueue()
+	beam.Push(&Item{State: start, Priority: 0})
+	nextStates := NewPriorityQueue()
 	startTime := time.Now()
 	best := start
 
@@ -23,7 +19,7 @@ func Beam(start *State, beamSize int, limit time.Duration) []*Node {
 			if beam.Empty() {
 				break
 			}
-			current := heap.Pop(beam).(*Item)
+			current := beam.Pop()
 			moves := current.PossibleNextMoves()
 			if len(moves) == 0 {
 				// terminal state
@@ -35,7 +31,7 @@ func Beam(start *State, beamSize int, limit time.Duration) []*Node {
 
 			for _, move := range moves {
 				next := current.Apply(move)
-				heap.Push(nextStates, &Item{
+				nextStates.Push(&Item{
 					State:    next,
 					Priority: next.Evaluation(),
 				})
@@ -46,7 +42,7 @@ func Beam(start *State, beamSize int, limit time.Duration) []*Node {
 
 	if best == nil {
 		// in case we saw no terminal state, use the best so far
-		best = heap.Pop(beam).(*Item).State
+		best = beam.Pop().State
 	}
 
 	var path []*Node

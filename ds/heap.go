@@ -9,6 +9,14 @@ func NewHeap[T any](compare func(a, b T) bool) *Heap[T] {
 	return &Heap[T]{compare: compare}
 }
 
+func (h *Heap[T]) Clear() {
+	h.data = h.data[0:0]
+}
+
+func (h *Heap[T]) Empty() bool {
+	return h.Len() == 0
+}
+
 func (h *Heap[T]) Len() int {
 	return len(h.data)
 }
