@@ -104,7 +104,7 @@ func TestMinimax_Every_Move(t *testing.T) {
 		}
 
 		// bot should always win or draw
-		if game.Score(botPlayer) < 0 {
+		if game.Evaluate(botPlayer) < 0 {
 			t.Errorf("Bot player %v lost", colorToString(botPlayer))
 			t.Log(game.String())
 			t.Fatal()

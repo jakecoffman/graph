@@ -5,9 +5,8 @@ import "math"
 type GameState interface {
 	// IsGameOver returns true when the game is over, win lose or draw.
 	IsGameOver() bool
-	// Score returns a positive score if the player won,
-	// negative if they lost, 0 otherwise.
-	Score(int) int
+	// Evaluate returns a positive value if the color is winning, negative if losing.
+	Evaluate(color int) int
 	// NextMoves returns a list of all possible next moves.
 	NextMoves() []int
 	// Play takes a move and applies it to the state.
@@ -48,7 +47,7 @@ func Negamax(state GameState, depth, alpha, beta int, color int) int {
 	}
 
 	if depth == 0 || state.IsGameOver() {
-		return state.Score(color)
+		return state.Evaluate(color)
 	}
 	value := math.MinInt64
 	moves := state.NextMoves()

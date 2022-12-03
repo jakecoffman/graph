@@ -78,7 +78,7 @@ func (s *State) Undo(index, color int) {
 }
 
 func (s *State) IsGameOver() bool {
-	score := s.Score(1)
+	score := s.Evaluate(1)
 	if score != 0 {
 		return true
 	}
@@ -91,7 +91,7 @@ func (s *State) IsGameOver() bool {
 	return freeCellsLeft == 0
 }
 
-func (s *State) Score(color int) int {
+func (s *State) Evaluate(color int) int {
 	player := Cell(color)
 
 	if (s.board[0] == player && s.board[1] == player && s.board[2] == player) ||

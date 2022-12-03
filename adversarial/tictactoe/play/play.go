@@ -63,7 +63,7 @@ func main() {
 	}
 
 	fmt.Println(state)
-	score := state.Score(turn)
+	score := state.Evaluate(turn)
 	if score == 0 {
 		fmt.Println("TIE!")
 	} else if score < 0 {
