@@ -1,7 +1,9 @@
 package tictactoe
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestNextStates(t *testing.T) {
@@ -78,27 +80,43 @@ func TestMinimax_Block(t *testing.T) {
 	})
 }
 
-func TestMinimax_Every_Move(t *testing.T) {
-	color := CellX
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
-	for i := 0; i < 9; i++ {
+func TestMinimax_Every_Move(t *testing.T) {
+	botPlayer := CellX
+
+	for i := 0; i < 100_000; i++ {
 		game := NewState()
-		game.Play(i, color)
+		turn := CellX
 
 		for !game.IsGameOver() {
-			color = -color
-			if color == 1 {
-				bestMove := game.BestMove(CellX)
-				game.Play(bestMove, color)
+			if turn == botPlayer {
+				bestMove := game.BestMove(botPlayer)
+				game.Play(bestMove, turn)
 			} else {
-				bestMove := game.BestMove(CellO)
-				game.Play(bestMove, color)
+				// non-bot player plays randomly
+				nextMoves := game.NextMoves()
+				game.Play(nextMoves[rand.Intn(len(nextMoves))], turn)
 			}
+			turn = -turn
 		}
 
-		// every game should draw
-		if game.Score() != 0 {
-			t.Error("Failed to tie", i)
+		// bot should always win or draw
+		if game.Score(botPlayer) < 0 {
+			t.Errorf("Bot player %v lost", colorToString(botPlayer))
+			t.Log(game.String())
+			t.Fatal()
 		}
+		// switch the bot player
+		botPlayer = -botPlayer
 	}
+}
+
+func colorToString(color int) string {
+	if color == 1 {
+		return "X"
+	}
+	return "O"
 }

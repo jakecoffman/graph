@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/jakecoffman/graph/adversarial"
 	"log"
-	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -138,10 +137,9 @@ func (s *State) BestMove(color int) int {
 	var drawMoves []int
 	var losingMoves []int
 
-	log.Println("Next moves", len(s.NextMoves()))
 	for _, move := range s.NextMoves() {
 		s.Play(move, color)
-		value := adversarial.Negamax(s, 8, math.MinInt64, math.MaxInt64, -color)
+		value := adversarial.Negamax(s, 100, -adversarial.Inf, adversarial.Inf, -color)
 		s.Undo(move, color)
 		if value < 0 {
 			winningMoves = append(winningMoves, move)
@@ -152,7 +150,6 @@ func (s *State) BestMove(color int) int {
 		}
 	}
 
-	log.Println(len(winningMoves), len(drawMoves), len(losingMoves))
 	if len(winningMoves) > 0 {
 		return winningMoves[rand.Intn(len(winningMoves))]
 	}
