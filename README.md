@@ -8,10 +8,10 @@ Graph (and Tree) algorithms in Go.
 Featuring:
 - Uniform Cost Search (UCS or Dijkstra’s Algorithm)
 - A* (Astar)
-- Breadth First Search
-- Depth First Search
-- Beam search
-- Chokudai search
+- Breadth First Search (BFS)
+- Depth First Search (DFS)
+- Beam search (BS)
+- Chokudai search (DFS version of Beam)
 - Monte Carlo Tree Search (MCTS)
 - Minimax (depth-limited Negamax with alpha-beta pruning)
 
