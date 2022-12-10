@@ -8,14 +8,11 @@ import (
 
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
 func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*Node) {
-	pqs := make([]*ds.Heap[*Item], maxTurns+1)
+	pqs := make([]*ds.Heap[*ds.Item[*State]], maxTurns+1)
 	for i := 0; i < maxTurns+1; i++ {
-		pqs[i] = NewPriorityQueue()
+		pqs[i] = ds.NewPriorityQueue[*State](greater)
 	}
-	pqs[0].Push(&Item{
-		State:    start,
-		Priority: 0,
-	})
+	pqs[0].Push(ds.NewItem(start, 0))
 	timeStart := time.Now()
 
 	for time.Now().Sub(timeStart) < limit {
@@ -39,10 +36,7 @@ func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*N
 
 				for _, move := range moves {
 					next := state.Apply(move)
-					pqs[depth+1].Push(&Item{
-						State:    next,
-						Priority: next.Evaluation(),
-					})
+					pqs[depth+1].Push(ds.NewItem(next, next.Evaluation()))
 				}
 			}
 		}

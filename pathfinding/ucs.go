@@ -8,11 +8,9 @@ import (
 // lower cost routes.
 func UCS(start, goal *Node) (path []*Node, found bool) {
 	// keeps it sorted by priority (low-to-high: min-heap)
-	pq := ds.NewHeap(func(a, b *Item) bool {
-		return a.Priority < b.Priority
-	})
+	pq := ds.NewPriorityQueue[*Node](less)
 	// push the first item into the pq
-	pq.Push(&Item{Node: start, Priority: 0})
+	pq.Push(ds.NewItem(start, 0))
 	cameFrom := map[*Node]*Node{
 		start: nil,
 	}
@@ -23,20 +21,20 @@ func UCS(start, goal *Node) (path []*Node, found bool) {
 	for pq.Len() > 0 {
 		current := pq.Pop()
 
-		if current.Node == goal {
+		if current.State == goal {
 			found = true
 			break
 		}
 
 		// push all neighbors into the pq
-		for _, next := range current.Neighbors {
+		for _, next := range current.State.Neighbors {
 			// cost is cost of current node plus the next cost
-			newCost := costSoFar[current.Node] + Costs[next.Kind]
+			newCost := costSoFar[current.State] + Costs[next.Kind]
 			// if we haven't seen this node yet OR we have but this path was better...
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				pq.Push(&Item{Node: next, Priority: newCost})
-				cameFrom[next] = current.Node
+				pq.Push(ds.NewItem(next, newCost))
+				cameFrom[next] = current.State
 			}
 		}
 	}

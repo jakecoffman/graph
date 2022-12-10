@@ -5,24 +5,14 @@ import (
 	"github.com/jakecoffman/graph/ds"
 )
 
-// Item is an example item for pathfinding. Replace Node with your game data.
-type Item struct {
-	// Node is the value of the item, it is arbitrary data.
-	*Node
-
-	// Priority is set by the user and used by the heap to order.
-	Priority int
-
-	// Index is used by the heap.Interface methods to keep things sorted.
-	Index int
+func less(a, b int) bool {
+	return a < b
 }
 
 // Astar (or A*) is UCS but applies a heuristic to tell which states are better.
 func Astar(start, goal *Node) (path []*Node, found bool) {
-	frontier := ds.NewHeap[*Item](func(a, b *Item) bool {
-		return a.Priority < b.Priority
-	})
-	frontier.Push(&Item{Node: start, Priority: 0})
+	frontier := ds.NewPriorityQueue[*Node](less)
+	frontier.Push(ds.NewItem(start, 0))
 	cameFrom := map[*Node]*Node{
 		start: nil,
 	}
@@ -33,20 +23,20 @@ func Astar(start, goal *Node) (path []*Node, found bool) {
 	for frontier.Len() > 0 {
 		current := frontier.Pop()
 
-		if current.Node == goal {
+		if current.State == goal {
 			found = true
 			break
 		}
 
-		for _, next := range current.Neighbors {
-			newCost := costSoFar[current.Node] + Costs[next.Kind]
+		for _, next := range current.State.Neighbors {
+			newCost := costSoFar[current.State] + Costs[next.Kind]
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
 				priority := newCost
 				// this next line is the only difference between UCS and astar
 				priority += graph.ManhattanDistance(goal.Pos, next.Pos)
-				frontier.Push(&Item{Node: next, Priority: priority})
-				cameFrom[next] = current.Node
+				frontier.Push(ds.NewItem(next, priority))
+				cameFrom[next] = current.State
 			}
 		}
 	}

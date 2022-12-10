@@ -1,14 +1,19 @@
 package optimization
 
 import (
+	"github.com/jakecoffman/graph/ds"
 	"time"
 )
 
+func greater(a, b int) bool {
+	return a > b
+}
+
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
 func Beam(start *State, beamSize int, limit time.Duration) []*Node {
-	beam := NewPriorityQueue()
-	beam.Push(&Item{State: start, Priority: 0})
-	nextStates := NewPriorityQueue()
+	beam := ds.NewPriorityQueue[*State](greater)
+	beam.Push(ds.NewItem(start, 0))
+	nextStates := ds.NewPriorityQueue[*State](greater)
 	startTime := time.Now()
 	best := start
 
@@ -20,21 +25,18 @@ func Beam(start *State, beamSize int, limit time.Duration) []*Node {
 				break
 			}
 			current := beam.Pop()
-			moves := current.PossibleNextMoves()
+			moves := current.State.PossibleNextMoves()
 			if len(moves) == 0 {
 				// terminal state
-				if best.Evaluation() < current.Evaluation() {
+				if best.Evaluation() < current.State.Evaluation() {
 					best = current.State
 				}
 				continue
 			}
 
 			for _, move := range moves {
-				next := current.Apply(move)
-				nextStates.Push(&Item{
-					State:    next,
-					Priority: next.Evaluation(),
-				})
+				next := current.State.Apply(move)
+				nextStates.Push(ds.NewItem(next, next.Evaluation()))
 			}
 		}
 		beam, nextStates = nextStates, beam
