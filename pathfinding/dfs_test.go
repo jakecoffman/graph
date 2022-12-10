@@ -2,19 +2,20 @@ package pathfinding
 
 import (
 	"fmt"
+	"github.com/jakecoffman/graph/maze"
 	"testing"
 )
 
 func Test_DFS1(t *testing.T) {
-	world := NewWorld(`
+	world := maze.NewWorld(`
 ########
 #    #G#
 #  # # #
 #S#    #
 ########
 `)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
+	start := world.FindOne(maze.Start)
+	goal := world.FindOne(maze.Goal)
 
 	path, found := DFS(start, goal)
 	if !found || len(path) != 11 {
@@ -24,15 +25,15 @@ func Test_DFS1(t *testing.T) {
 }
 
 func Test_DFS2(t *testing.T) {
-	world := NewWorld(`
+	world := maze.NewWorld(`
 ########
 #      #
 #  SG  #
 #      #
 ########
 `)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
+	start := world.FindOne(maze.Start)
+	goal := world.FindOne(maze.Goal)
 
 	path, found := DFS(start, goal)
 	if !found || len(path) != 1 {
@@ -42,15 +43,15 @@ func Test_DFS2(t *testing.T) {
 }
 
 func Test_DFS_NoPath(t *testing.T) {
-	world := NewWorld(`
+	world := maze.NewWorld(`
 ########
 #     ##
 #  S #G#
 #     ##
 ########
 `)
-	start := world.FindOne(Start)
-	goal := world.FindOne(Goal)
+	start := world.FindOne(maze.Start)
+	goal := world.FindOne(maze.Goal)
 
 	path, found := DFS(start, goal)
 	if found || len(path) != 0 {

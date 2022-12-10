@@ -2,6 +2,7 @@ package optimization
 
 import (
 	"fmt"
+	"github.com/jakecoffman/graph/maze"
 	"log"
 	"os"
 	"runtime/pprof"
@@ -11,8 +12,8 @@ import (
 
 func TestGeneticAlgorithm(t *testing.T) {
 	log.SetFlags(0)
-	world := NewWorld(map1)
-	startNode := world.FindOne(Start)
+	world := maze.NewWorld(map1)
+	startNode := world.FindOne(maze.Start)
 	state := &State{
 		World: *world,
 		At:    startNode,
@@ -33,11 +34,11 @@ func TestGeneticAlgorithm(t *testing.T) {
 func TestPopulation_cumulativeSum(t *testing.T) {
 	p := &Population{Routes: []Chromosome{{
 		Fitness: 120.2,
-	},{
+	}, {
 		Fitness: 83.5,
-	},{
+	}, {
 		Fitness: 33.3,
-	},{
+	}, {
 		Fitness: 10,
 	}}}
 	p.cumulativeSum()
@@ -60,8 +61,8 @@ func BenchmarkGeneticAlgorithm(b *testing.B) {
 		defer pprof.StopCPUProfile()
 	}
 	log.SetFlags(0)
-	world := NewWorld(map1)
-	startNode := world.FindOne(Start)
+	world := maze.NewWorld(map1)
+	startNode := world.FindOne(maze.Start)
 	state := &State{
 		World: *world,
 		At:    startNode,

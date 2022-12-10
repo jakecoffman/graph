@@ -2,14 +2,15 @@ package optimization
 
 import (
 	"fmt"
+	"github.com/jakecoffman/graph/maze"
 	"log"
 	"testing"
 	"time"
 )
 
 func TestChokudai(t *testing.T) {
-	world := NewWorld(map1)
-	startNode := world.FindOne(Start)
+	world := maze.NewWorld(map1)
+	startNode := world.FindOne(maze.Start)
 	state := &State{
 		World: *world,
 		At:    startNode,

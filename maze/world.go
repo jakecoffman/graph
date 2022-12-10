@@ -1,4 +1,4 @@
-package pathfinding
+package maze
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 )
 
 type World struct {
-	width, height int
-	world         [][]*Node
+	Width, Height int
+	Map           []Node
 }
 
 // NewWorld is the World constructor. Takes a serialized World as input.
@@ -17,17 +17,10 @@ func NewWorld(input string) *World {
 	rows := strings.Split(str, "\n")
 
 	g := &World{
-		width:  len(rows[0]),
-		height: len(rows),
-		world:  nil,
+		Width:  len(rows[0]),
+		Height: len(rows),
 	}
-
-	for x := 0; x < g.width; x++ {
-		g.world = append(g.world, []*Node{})
-		for y := 0; y < g.height; y++ {
-			g.world[x] = append(g.world[x], &Node{Pos: Pos{x, y}})
-		}
-	}
+	g.Map = make([]Node, g.Width*g.Height)
 
 	for y, row := range rows {
 		for x, raw := range row {
@@ -35,25 +28,27 @@ func NewWorld(input string) *World {
 			if !ok {
 				panic("Unknown rune: " + string(raw))
 			} else {
-				g.At(x, y).Kind = kind
+				node := g.At(x, y)
+				node.Kind = kind
+				node.Pos = Pos{x, y}
 			}
 		}
 	}
 
-	for y := 0; y < g.height; y++ {
-		for x := 0; x < g.width; x++ {
+	for y := 0; y < g.Height; y++ {
+		for x := 0; x < g.Width; x++ {
 			node := g.At(x, y)
 			if node.Kind == Wall {
 				continue
 			}
 			WalkNeighbors(Pos{x, y}, func(nX, nY int) {
-				if nX >= g.width {
-					nX -= g.width
+				if nX >= g.Width {
+					nX -= g.Width
 				}
 				if nX < 0 {
-					nX += g.width
+					nX += g.Width
 				}
-				if nY < 0 || nY >= g.height {
+				if nY < 0 || nY >= g.Height {
 					return
 				}
 				neighbor := g.At(nX, nY)
@@ -73,9 +68,9 @@ func (w *World) RenderPath(path []*Node) string {
 	for _, p := range path {
 		pathLocs[p.Pos] = true
 	}
-	rows := make([]string, w.height)
-	for x := 0; x < w.width; x++ {
-		for y := 0; y < w.height; y++ {
+	rows := make([]string, w.Height)
+	for x := 0; x < w.Width; x++ {
+		for y := 0; y < w.Height; y++ {
 			t := w.At(x, y)
 			r := ' '
 			if pathLocs[Pos{x, y}] {
@@ -90,12 +85,12 @@ func (w *World) RenderPath(path []*Node) string {
 }
 
 func (w *World) At(x, y int) *Node {
-	return w.world[x][y]
+	return &w.Map[w.Width*y+x]
 }
 
 func (w *World) FindOne(kind Kind) *Node {
-	for y := 0; y < w.height; y++ {
-		for x := 0; x < w.width; x++ {
+	for y := 0; y < w.Height; y++ {
+		for x := 0; x < w.Width; x++ {
 			node := w.At(x, y)
 			if node.Kind == kind {
 				return node
@@ -105,10 +100,23 @@ func (w *World) FindOne(kind Kind) *Node {
 	return nil
 }
 
+func (w *World) FindAll(kind Kind) (nodes []*Node) {
+	for y := 0; y < w.Height; y++ {
+		for x := 0; x < w.Width; x++ {
+			node := w.At(x, y)
+			if node.Kind == kind {
+				nodes = append(nodes, node)
+			}
+		}
+	}
+	return
+}
+
 type Node struct {
 	Kind
 	Pos
 	Neighbors []*Node
+	Visited   int
 }
 
 func (n *Node) String() string {

@@ -2,19 +2,20 @@ package pathfinding
 
 import (
 	"github.com/jakecoffman/graph/ds"
+	"github.com/jakecoffman/graph/maze"
 )
 
 // UCS or Dijkstra is like BFS but takes cost into account by examining
 // lower cost routes.
-func UCS(start, goal *Node) (path []*Node, found bool) {
+func UCS(start, goal *maze.Node) (path []*maze.Node, found bool) {
 	// keeps it sorted by priority (low-to-high: min-heap)
-	pq := ds.NewPriorityQueue[*Node](less)
+	pq := ds.NewPriorityQueue[*maze.Node](less)
 	// push the first item into the pq
 	pq.Push(ds.NewItem(start, 0))
-	cameFrom := map[*Node]*Node{
+	cameFrom := map[*maze.Node]*maze.Node{
 		start: nil,
 	}
-	costSoFar := map[*Node]int{
+	costSoFar := map[*maze.Node]int{
 		start: 0,
 	}
 
@@ -29,7 +30,7 @@ func UCS(start, goal *Node) (path []*Node, found bool) {
 		// push all neighbors into the pq
 		for _, next := range current.State.Neighbors {
 			// cost is cost of current node plus the next cost
-			newCost := costSoFar[current.State] + Costs[next.Kind]
+			newCost := costSoFar[current.State] + maze.Costs[next.Kind]
 			// if we haven't seen this node yet OR we have but this path was better...
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost

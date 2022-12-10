@@ -3,6 +3,7 @@ package optimization
 import (
 	"fmt"
 	"github.com/jakecoffman/graph"
+	"github.com/jakecoffman/graph/maze"
 	"log"
 	"math/rand"
 	"sort"
@@ -11,7 +12,7 @@ import (
 )
 
 // Gene is a Goal node
-type Gene = *Node
+type Gene = *maze.Node
 
 // Chromosome is a route through all Goals
 type Chromosome struct {
@@ -25,15 +26,15 @@ type Population struct {
 }
 
 // NewChromosome creates a random sampling of goal nodes
-func NewChromosome(w World) Chromosome {
-	goals := w.FindAll(Goal)
+func NewChromosome(w maze.World) Chromosome {
+	goals := w.FindAll(maze.Goal)
 	permutation := rand.Perm(len(goals))
-	var route []*Node
+	var route []*maze.Node
 	for i := 0; i < len(goals); i++ {
 		route = append(route, goals[permutation[i]])
 	}
 	return Chromosome{
-		Route: append(w.FindAll(Start), route...),
+		Route: append(w.FindAll(maze.Start), route...),
 	}
 }
 
@@ -52,7 +53,7 @@ func (c *Chromosome) CalcFitness() float64 {
 }
 
 // NewPopulation creates the first generation
-func NewPopulation(size int, w World) Population {
+func NewPopulation(size int, w maze.World) Population {
 	var routes []Chromosome
 	for i := 0; i < size; i++ {
 		routes = append(routes, NewChromosome(w))
@@ -172,7 +173,7 @@ func Mutate(individual *Chromosome, mutationRate float64) {
 	for i := 1; i < len(individual.Route); i++ {
 		if rand.Float64() < mutationRate {
 			// again, skip the first position
-			swap := rand.Intn(len(individual.Route)-1)+1
+			swap := rand.Intn(len(individual.Route)-1) + 1
 			individual.Route[i], individual.Route[swap] = individual.Route[swap], individual.Route[i]
 		}
 	}
@@ -186,7 +187,7 @@ func (p *Population) NextGeneration(eliteSize int, mutationRate float64) Populat
 	return children
 }
 
-func GeneticAlgorithm(first *State, populationSize int, eliteSize int, mutationRate float64, limit time.Duration) []*Node {
+func GeneticAlgorithm(first *State, populationSize int, eliteSize int, mutationRate float64, limit time.Duration) []*maze.Node {
 	start := time.Now()
 	p := NewPopulation(populationSize, first.World)
 	for time.Now().Sub(start) < limit {

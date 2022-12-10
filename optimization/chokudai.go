@@ -2,12 +2,13 @@ package optimization
 
 import (
 	"github.com/jakecoffman/graph/ds"
+	"github.com/jakecoffman/graph/maze"
 	"log"
 	"time"
 )
 
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
-func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*Node) {
+func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*maze.Node) {
 	pqs := make([]*ds.Heap[*ds.Item[*State]], maxTurns+1)
 	for i := 0; i < maxTurns+1; i++ {
 		pqs[i] = ds.NewPriorityQueue[*State](greater)

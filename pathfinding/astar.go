@@ -3,6 +3,7 @@ package pathfinding
 import (
 	"github.com/jakecoffman/graph"
 	"github.com/jakecoffman/graph/ds"
+	"github.com/jakecoffman/graph/maze"
 )
 
 func less(a, b int) bool {
@@ -10,13 +11,13 @@ func less(a, b int) bool {
 }
 
 // Astar (or A*) is UCS but applies a heuristic to tell which states are better.
-func Astar(start, goal *Node) (path []*Node, found bool) {
-	frontier := ds.NewPriorityQueue[*Node](less)
+func Astar(start, goal *maze.Node) (path []*maze.Node, found bool) {
+	frontier := ds.NewPriorityQueue[*maze.Node](less)
 	frontier.Push(ds.NewItem(start, 0))
-	cameFrom := map[*Node]*Node{
+	cameFrom := map[*maze.Node]*maze.Node{
 		start: nil,
 	}
-	costSoFar := map[*Node]int{
+	costSoFar := map[*maze.Node]int{
 		start: 0,
 	}
 
@@ -29,7 +30,7 @@ func Astar(start, goal *Node) (path []*Node, found bool) {
 		}
 
 		for _, next := range current.State.Neighbors {
-			newCost := costSoFar[current.State] + Costs[next.Kind]
+			newCost := costSoFar[current.State] + maze.Costs[next.Kind]
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
 				priority := newCost

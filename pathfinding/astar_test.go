@@ -1,6 +1,7 @@
 package pathfinding
 
 import (
+	"github.com/jakecoffman/graph/maze"
 	"strings"
 	"testing"
 )
@@ -62,9 +63,9 @@ func Test_Astar(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		world := NewWorld(test.start)
-		start := world.FindOne(Start)
-		goal := world.FindOne(Goal)
+		world := maze.NewWorld(test.start)
+		start := world.FindOne(maze.Start)
+		goal := world.FindOne(maze.Goal)
 
 		path, found := Astar(start, goal)
 		if len(test.expected) > 0 && !found {

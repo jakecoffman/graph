@@ -1,6 +1,7 @@
 package optimization
 
 import (
+	"github.com/jakecoffman/graph/maze"
 	"math"
 	"math/rand"
 	"sort"
@@ -12,7 +13,7 @@ func init() {
 }
 
 // MCTS performs a Monte Carlo Tree Search with Upper Confidence Bound.
-func MCTS(first *State, simulations int, c float64, limit time.Duration) []*Node {
+func MCTS(first *State, simulations int, c float64, limit time.Duration) []*maze.Node {
 	start := time.Now()
 	root := &MCTSNode{
 		state:        first,
@@ -70,7 +71,7 @@ func MCTS(first *State, simulations int, c float64, limit time.Duration) []*Node
 		node.selectionScore = winRatio + c*math.Sqrt(2*math.Log(float64(node.parent.visits)/float64(node.visits)))
 	}
 
-	var path []*Node
+	var path []*maze.Node
 	current := root
 	for len(current.children) > 0 {
 		sort.Slice(current.children, func(i, j int) bool {
