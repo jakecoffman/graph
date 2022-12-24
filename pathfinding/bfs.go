@@ -2,17 +2,14 @@ package pathfinding
 
 import (
 	"github.com/jakecoffman/graph/ds"
-	"github.com/jakecoffman/graph/maze"
 )
 
 // BFS explores the breadth of the tree before the depth.
 // The implementation is identical to DFS except BFS uses a Queue (FIFO).
-func BFS(start, goal *maze.Node) (path []*maze.Node, found bool) {
-	frontier := ds.Queue[*maze.Node]{}
+func BFS[T Pathfinder[T]](start, goal T) (path []T, found bool) {
+	frontier := ds.Queue[T]{}
 	frontier.Put(start)
-	cameFrom := map[*maze.Node]*maze.Node{
-		start: nil,
-	}
+	cameFrom := map[T]T{}
 
 	for !frontier.Empty() {
 		current := frontier.Pop()
@@ -23,12 +20,12 @@ func BFS(start, goal *maze.Node) (path []*maze.Node, found bool) {
 			break
 		}
 
-		for _, next := range current.Neighbors {
+		current.EachNeighbor(func(next T) {
 			if _, ok := cameFrom[next]; !ok {
 				frontier.Put(next)
 				cameFrom[next] = current
 			}
-		}
+		})
 	}
 
 	if !found {

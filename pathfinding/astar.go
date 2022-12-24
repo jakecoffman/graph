@@ -10,8 +10,12 @@ func less(a, b int) bool {
 
 type Pathfinder[T any] interface {
 	comparable
+	// EachNeighbor calls f for each neighbor of this node.
 	EachNeighbor(func(T))
+	// Cost returns the cost of moving to this node.
 	Cost() int
+	// Heuristic returns the estimated cost to the goal.
+	// For grid based games this is usually the manhattan distance.
 	Heuristic(T) int
 }
 

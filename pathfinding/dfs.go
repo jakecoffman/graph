@@ -2,17 +2,14 @@ package pathfinding
 
 import (
 	"github.com/jakecoffman/graph/ds"
-	"github.com/jakecoffman/graph/maze"
 )
 
 // DFS explores the depth of the tree/graph before the breadth.
 // The implementation is identical to BFS except it uses a stack (FILO).
-func DFS(start, goal *maze.Node) (path []*maze.Node, found bool) {
-	frontier := ds.Stack[*maze.Node]{}
+func DFS[T Pathfinder[T]](start, goal T) (path []T, found bool) {
+	frontier := ds.Stack[T]{}
 	frontier.Push(start)
-	cameFrom := map[*maze.Node]*maze.Node{
-		start: nil,
-	}
+	cameFrom := make(map[T]T)
 
 	for frontier.Len() > 0 {
 		current := frontier.Pop()
@@ -23,12 +20,12 @@ func DFS(start, goal *maze.Node) (path []*maze.Node, found bool) {
 			break
 		}
 
-		for _, next := range current.Neighbors {
+		current.EachNeighbor(func(next T) {
 			if _, ok := cameFrom[next]; !ok {
 				frontier.Push(next)
 				cameFrom[next] = current
 			}
-		}
+		})
 	}
 
 	if !found {
