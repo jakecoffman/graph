@@ -13,7 +13,7 @@ func greater(a, b int) bool {
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
 func Beam(start *State, beamSize int, limit time.Duration) []*maze.Node {
 	beam := ds.NewPriorityQueue[*State](greater)
-	beam.Push(ds.NewItem(start, 0))
+	beam.Push(start, 0)
 	nextStates := ds.NewPriorityQueue[*State](greater)
 	startTime := time.Now()
 	best := start
@@ -26,18 +26,18 @@ func Beam(start *State, beamSize int, limit time.Duration) []*maze.Node {
 				break
 			}
 			current := beam.Pop()
-			moves := current.State.PossibleNextMoves()
+			moves := current.PossibleNextMoves()
 			if len(moves) == 0 {
 				// terminal state
-				if best.Evaluation() < current.State.Evaluation() {
-					best = current.State
+				if best.Evaluation() < current.Evaluation() {
+					best = current
 				}
 				continue
 			}
 
 			for _, move := range moves {
-				next := current.State.Apply(move)
-				nextStates.Push(ds.NewItem(next, next.Evaluation()))
+				next := current.Apply(move)
+				nextStates.Push(next, next.Evaluation())
 			}
 		}
 		beam, nextStates = nextStates, beam
@@ -45,7 +45,7 @@ func Beam(start *State, beamSize int, limit time.Duration) []*maze.Node {
 
 	if best == nil {
 		// in case we saw no terminal state, use the best so far
-		best = beam.Pop().State
+		best = beam.Pop()
 	}
 
 	var path []*maze.Node

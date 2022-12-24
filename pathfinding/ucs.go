@@ -11,7 +11,7 @@ func UCS(start, goal *maze.Node) (path []*maze.Node, found bool) {
 	// keeps it sorted by priority (low-to-high: min-heap)
 	pq := ds.NewPriorityQueue[*maze.Node](less)
 	// push the first item into the pq
-	pq.Push(ds.NewItem(start, 0))
+	pq.Push(start, 0)
 	cameFrom := map[*maze.Node]*maze.Node{
 		start: nil,
 	}
@@ -22,20 +22,20 @@ func UCS(start, goal *maze.Node) (path []*maze.Node, found bool) {
 	for pq.Len() > 0 {
 		current := pq.Pop()
 
-		if current.State == goal {
+		if current == goal {
 			found = true
 			break
 		}
 
 		// push all neighbors into the pq
-		for _, next := range current.State.Neighbors {
+		for _, next := range current.Neighbors {
 			// cost is cost of current node plus the next cost
-			newCost := costSoFar[current.State] + maze.Costs[next.Kind]
+			newCost := costSoFar[current] + maze.Costs[next.Kind]
 			// if we haven't seen this node yet OR we have but this path was better...
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
-				pq.Push(ds.NewItem(next, newCost))
-				cameFrom[next] = current.State
+				pq.Push(next, newCost)
+				cameFrom[next] = current
 			}
 		}
 	}

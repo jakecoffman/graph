@@ -9,11 +9,11 @@ import (
 
 // Chokudai is DFS but considers the highest priority nodes first and restricts the search space.
 func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*maze.Node) {
-	pqs := make([]*ds.Heap[*ds.Item[*State]], maxTurns+1)
+	pqs := make([]*ds.PriorityQueue[*State, int], maxTurns+1)
 	for i := 0; i < maxTurns+1; i++ {
 		pqs[i] = ds.NewPriorityQueue[*State](greater)
 	}
-	pqs[0].Push(ds.NewItem(start, 0))
+	pqs[0].Push(start, 0)
 	timeStart := time.Now()
 
 	for time.Now().Sub(timeStart) < limit {
@@ -26,18 +26,18 @@ func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*m
 
 				item := pqs[depth].Pop()
 				processed++
-				state := item.State
+				state := item
 
 				moves := state.PossibleNextMoves()
 				if len(moves) == 0 {
 					// terminal state
-					pqs[maxTurns].Push(item)
+					pqs[maxTurns].Push(item, state.Evaluation())
 					continue
 				}
 
 				for _, move := range moves {
 					next := state.Apply(move)
-					pqs[depth+1].Push(ds.NewItem(next, next.Evaluation()))
+					pqs[depth+1].Push(next, next.Evaluation())
 				}
 			}
 		}
@@ -52,7 +52,7 @@ func Chokudai(start *State, width, maxTurns int, limit time.Duration) (path []*m
 	if pqs[maxTurns].Len() == 0 {
 		return nil
 	}
-	best := pqs[maxTurns].Pop().State
+	best := pqs[maxTurns].Pop()
 
 	current := best
 	for current != start {

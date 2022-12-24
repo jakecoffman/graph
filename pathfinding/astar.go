@@ -13,7 +13,7 @@ func less(a, b int) bool {
 // Astar (or A*) is UCS but applies a heuristic to tell which states are better.
 func Astar(start, goal *maze.Node) (path []*maze.Node, found bool) {
 	frontier := ds.NewPriorityQueue[*maze.Node](less)
-	frontier.Push(ds.NewItem(start, 0))
+	frontier.Push(start, 0)
 	cameFrom := map[*maze.Node]*maze.Node{
 		start: nil,
 	}
@@ -24,20 +24,20 @@ func Astar(start, goal *maze.Node) (path []*maze.Node, found bool) {
 	for frontier.Len() > 0 {
 		current := frontier.Pop()
 
-		if current.State == goal {
+		if current == goal {
 			found = true
 			break
 		}
 
-		for _, next := range current.State.Neighbors {
-			newCost := costSoFar[current.State] + maze.Costs[next.Kind]
+		for _, next := range current.Neighbors {
+			newCost := costSoFar[current] + maze.Costs[next.Kind]
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
 				priority := newCost
 				// this next line is the only difference between UCS and astar
 				priority += graph.ManhattanDistance(goal.Pos, next.Pos)
-				frontier.Push(ds.NewItem(next, priority))
-				cameFrom[next] = current.State
+				frontier.Push(next, priority)
+				cameFrom[next] = current
 			}
 		}
 	}

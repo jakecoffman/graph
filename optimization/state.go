@@ -34,6 +34,14 @@ func (s *State) PossibleNextMoves() []Move {
 	return validMoves
 }
 
+func (s *State) NextStates() []*State {
+	var states []*State
+	for _, move := range s.PossibleNextMoves() {
+		states = append(states, s.Apply(move))
+	}
+	return states
+}
+
 // Apply creates a new state that is the result of performing the move on the current state.
 func (s *State) Apply(move Move) *State {
 	s.At.Visited++
