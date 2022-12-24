@@ -1,23 +1,26 @@
 package pathfinding
 
 import (
-	"github.com/jakecoffman/graph"
 	"github.com/jakecoffman/graph/ds"
-	"github.com/jakecoffman/graph/maze"
 )
 
 func less(a, b int) bool {
 	return a < b
 }
 
+type Pathfinder[T any] interface {
+	comparable
+	EachNeighbor(func(T))
+	Cost() int
+	Heuristic(T) int
+}
+
 // Astar (or A*) is UCS but applies a heuristic to tell which states are better.
-func Astar(start, goal *maze.Node) (path []*maze.Node, found bool) {
-	frontier := ds.NewPriorityQueue[*maze.Node](less)
+func Astar[T Pathfinder[T]](start, goal T) (path []T, found bool) {
+	frontier := ds.NewPriorityQueue[T](less)
 	frontier.Push(start, 0)
-	cameFrom := map[*maze.Node]*maze.Node{
-		start: nil,
-	}
-	costSoFar := map[*maze.Node]int{
+	cameFrom := make(map[T]T)
+	costSoFar := map[T]int{
 		start: 0,
 	}
 
@@ -29,17 +32,17 @@ func Astar(start, goal *maze.Node) (path []*maze.Node, found bool) {
 			break
 		}
 
-		for _, next := range current.Neighbors {
-			newCost := costSoFar[current] + maze.Costs[next.Kind]
+		current.EachNeighbor(func(next T) {
+			newCost := costSoFar[current] + next.Cost()
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
 				priority := newCost
 				// this next line is the only difference between UCS and astar
-				priority += graph.ManhattanDistance(goal.Pos, next.Pos)
+				priority += goal.Heuristic(next)
 				frontier.Push(next, priority)
 				cameFrom[next] = current
 			}
-		}
+		})
 	}
 
 	if !found {

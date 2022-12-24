@@ -123,6 +123,20 @@ func (n *Node) String() string {
 	return fmt.Sprintf(`[Node %v,%v %v]`, n.X, n.Y, Symbols[n.Kind])
 }
 
+func (n *Node) EachNeighbor(f func(*Node)) {
+	for _, n := range n.Neighbors {
+		f(n)
+	}
+}
+
+func (n *Node) Cost() int {
+	return Costs[n.Kind]
+}
+
+func (n *Node) Heuristic(to *Node) int {
+	return ManhattanDistance(n.Pos, to.Pos)
+}
+
 type Kind rune
 
 const (

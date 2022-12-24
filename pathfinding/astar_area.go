@@ -1,23 +1,19 @@
 package pathfinding
 
 import (
-	"github.com/jakecoffman/graph"
 	"github.com/jakecoffman/graph/ds"
-	"github.com/jakecoffman/graph/maze"
 	"math"
 )
 
 // AstarArea is A* but targets an area
-func AstarArea(start *maze.Node, goals []*maze.Node) (path []*maze.Node, found bool) {
-	frontier := ds.NewPriorityQueue[*maze.Node](less)
+func AstarArea[T Pathfinder[T]](start T, goals []T) (path []T, found bool) {
+	frontier := ds.NewPriorityQueue[T](less)
 	frontier.Push(start, 0)
-	cameFrom := map[*maze.Node]*maze.Node{
-		start: nil,
-	}
-	costSoFar := map[*maze.Node]int{
+	cameFrom := make(map[T]T)
+	costSoFar := map[T]int{
 		start: 0,
 	}
-	var foundGoal *maze.Node
+	var foundGoal T
 
 out:
 	for frontier.Len() > 0 {
@@ -31,14 +27,14 @@ out:
 			}
 		}
 
-		for _, next := range current.Neighbors {
-			newCost := costSoFar[current] + maze.Costs[next.Kind]
+		current.EachNeighbor(func(next T) {
+			newCost := costSoFar[current] + next.Cost()
 			if cost, ok := costSoFar[next]; !ok || newCost < cost {
 				costSoFar[next] = newCost
 				priority := newCost
 				closestCost := math.MaxInt64
 				for _, goal := range goals {
-					dist := graph.ManhattanDistance(goal.Pos, next.Pos)
+					dist := goal.Heuristic(next)
 					if dist < closestCost {
 						closestCost = dist
 					}
@@ -47,7 +43,7 @@ out:
 				frontier.Push(next, priority)
 				cameFrom[next] = current
 			}
-		}
+		})
 	}
 
 	if !found {
