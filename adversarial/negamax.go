@@ -28,7 +28,7 @@ const Inf = math.MaxInt64 - 1
 // alpha represents the minimum score that the maximizing player is assured of
 // beta represents the maximum score that the minimizing player is assured of
 // Initially, alpha should be set to negative infinity and beta positive infinity.
-func Negamax(state GameState, depth, alpha, beta int, color int) int {
+func Negamax[T GameState](state T, depth, alpha, beta int, color int) int {
 	alphaOrig := alpha
 	hash := state.Hash(color)
 	ttEntry, ok := transpositionTable[hash]
