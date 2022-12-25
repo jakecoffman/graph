@@ -2,7 +2,6 @@ package optimization
 
 import (
 	"github.com/jakecoffman/graph/ds"
-	"github.com/jakecoffman/graph/maze"
 	"time"
 )
 
@@ -11,10 +10,10 @@ func greater(a, b int) bool {
 }
 
 // Beam is like BFS but restricts the search space to save time by only looking at the best nodes.
-func Beam(start *State, beamSize int, limit time.Duration) []*maze.Node {
-	beam := ds.NewPriorityQueue[*State](greater)
+func Beam[T GameState[T, U], U any](start T, beamSize int, limit time.Duration) []U {
+	beam := ds.NewPriorityQueue[T](greater)
 	beam.Push(start, 0)
-	nextStates := ds.NewPriorityQueue[*State](greater)
+	nextStates := ds.NewPriorityQueue[T](greater)
 	startTime := time.Now()
 	best := start
 
@@ -43,16 +42,16 @@ func Beam(start *State, beamSize int, limit time.Duration) []*maze.Node {
 		beam, nextStates = nextStates, beam
 	}
 
-	if best == nil {
+	if best == start {
 		// in case we saw no terminal state, use the best so far
 		best = beam.Pop()
 	}
 
-	var path []*maze.Node
+	var path []U
 	current := best
 	for current != start {
-		path = append(path, current.At)
-		current = current.CameFrom
+		path = append(path, current.CreatedBy())
+		current = current.CameFrom()
 	}
 	// reverse
 	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {

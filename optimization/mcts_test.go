@@ -21,7 +21,7 @@ func TestMCTS(t *testing.T) {
 		c           = 1.5
 		limit       = 100 * time.Millisecond
 	)
-	path := MCTS(state, simulations, c, limit)
+	path := MCTS[*State, *maze.Node](state, simulations, c, limit)
 
 	log.Println("Took", time.Now().Sub(start))
 	fmt.Println(world.RenderPath(path))

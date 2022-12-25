@@ -21,7 +21,7 @@ func TestChokudai(t *testing.T) {
 		maxTurns = 100
 		limit    = 100 * time.Millisecond
 	)
-	path := Chokudai(state, width, maxTurns, limit)
+	path := Chokudai[*State, *maze.Node](state, width, maxTurns, limit)
 
 	log.Println("Took", time.Now().Sub(start))
 	fmt.Println(world.RenderPath(path))

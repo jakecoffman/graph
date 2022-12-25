@@ -20,7 +20,7 @@ func TestBeam(t *testing.T) {
 		beamSize = 200
 		limit    = 100 * time.Millisecond
 	)
-	path := Beam(state, beamSize, limit)
+	path := Beam[*State, *maze.Node](state, beamSize, limit)
 
 	log.Println("Took", time.Now().Sub(start))
 	fmt.Println(world.RenderPath(path))

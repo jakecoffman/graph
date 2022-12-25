@@ -1,9 +1,23 @@
 package optimization
 
 import (
-	"github.com/jakecoffman/graph"
 	"github.com/jakecoffman/graph/maze"
 )
+
+// GameState represents the state of the game at a given point in time.
+type GameState[T, U any] interface {
+	comparable
+	// PossibleNextMoves returns an index of possible moves.
+	PossibleNextMoves() []U
+	// Evaluation returns a high value for a good state, low value for a bad state.
+	Evaluation() int
+	// Apply returns a new state with the move applied.
+	Apply(U) T
+	// CameFrom returns the state that this one was generated from.
+	CameFrom() T
+	// CreatedBy returns the move that created this state.
+	CreatedBy() U
+}
 
 // State represents the game state at each moment
 type State struct {
@@ -11,24 +25,19 @@ type State struct {
 	At       *maze.Node
 	Score    int
 	Steps    int
-	CameFrom *State
-}
-
-// Move represents an action you can take in the game
-type Move struct {
-	Pos graph.Pos
+	cameFrom *State
 }
 
 // PossibleNextMoves returns a list of moves you can make at a state
-func (s *State) PossibleNextMoves() []Move {
+func (s *State) PossibleNextMoves() []*maze.Node {
 	if len(s.World.FindAll(maze.Goal)) == 0 {
 		return nil
 	}
 
-	var validMoves []Move
+	var validMoves []*maze.Node
 	for _, n := range s.At.Neighbors {
 		if n.Kind == maze.Plain || n.Kind == maze.Start || n.Kind == maze.Goal {
-			validMoves = append(validMoves, Move{Pos: n.Pos})
+			validMoves = append(validMoves, n)
 		}
 	}
 	return validMoves
@@ -43,10 +52,10 @@ func (s *State) NextStates() []*State {
 }
 
 // Apply creates a new state that is the result of performing the move on the current state.
-func (s *State) Apply(move Move) *State {
+func (s *State) Apply(move *maze.Node) *State {
 	s.At.Visited++
 	newState := s.Clone()
-	newState.CameFrom = s
+	newState.cameFrom = s
 	node := newState.World.At(move.Pos.X, move.Pos.Y)
 	if node.Kind == maze.Goal {
 		newState.Score++
@@ -75,4 +84,12 @@ func (s *State) Clone() *State {
 // Evaluation returns an int that represents how good the state is, higher is better.
 func (s *State) Evaluation() int {
 	return s.Score*100 - s.At.Visited - s.Steps
+}
+
+func (s *State) CameFrom() *State {
+	return s.cameFrom
+}
+
+func (s *State) CreatedBy() *maze.Node {
+	return s.cameFrom.At
 }

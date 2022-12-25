@@ -1,7 +1,6 @@
 package optimization
 
 import (
-	"github.com/jakecoffman/graph/maze"
 	"math"
 	"math/rand"
 	"sort"
@@ -13,9 +12,9 @@ func init() {
 }
 
 // MCTS performs a Monte Carlo Tree Search with Upper Confidence Bound.
-func MCTS(first *State, simulations int, c float64, limit time.Duration) []*maze.Node {
+func MCTS[T GameState[T, U], U any](first T, simulations int, c float64, limit time.Duration) []U {
 	start := time.Now()
-	root := &MCTSNode{
+	root := &MCTSNode[T, U]{
 		state:        first,
 		untriedMoves: first.PossibleNextMoves(),
 	}
@@ -38,7 +37,7 @@ func MCTS(first *State, simulations int, c float64, limit time.Duration) []*maze
 			node.untriedMoves = append(node.untriedMoves[:i], node.untriedMoves[i+1:]...)
 
 			newState := node.state.Apply(move)
-			child := &MCTSNode{
+			child := &MCTSNode[T, U]{
 				parent:       node,
 				state:        newState,
 				untriedMoves: newState.PossibleNextMoves(),
@@ -71,24 +70,24 @@ func MCTS(first *State, simulations int, c float64, limit time.Duration) []*maze
 		node.selectionScore = winRatio + c*math.Sqrt(2*math.Log(float64(node.parent.visits)/float64(node.visits)))
 	}
 
-	var path []*maze.Node
+	var path []U
 	current := root
 	for len(current.children) > 0 {
 		sort.Slice(current.children, func(i, j int) bool {
 			return current.children[i].visits > current.children[j].visits
 		})
-		path = append(path, current.children[0].state.At)
+		path = append(path, current.children[0].state.CreatedBy())
 		current = current.children[0]
 	}
 	return path
 }
 
-type MCTSNode struct {
-	parent         *MCTSNode
-	state          *State
+type MCTSNode[T GameState[T, U], U any] struct {
+	parent         *MCTSNode[T, U]
+	state          T
 	totalOutcome   float64
 	visits         uint64
-	untriedMoves   []Move
-	children       []*MCTSNode
+	untriedMoves   []U
+	children       []*MCTSNode[T, U]
 	selectionScore float64
 }
