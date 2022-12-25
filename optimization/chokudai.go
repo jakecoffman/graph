@@ -23,14 +23,13 @@ func Chokudai[T GameState[T, U], U any](start T, width, maxTurns int, limit time
 					break
 				}
 
-				item := pqs[depth].Pop()
+				state := pqs[depth].Pop()
 				processed++
-				state := item
 
 				moves := state.PossibleNextMoves()
 				if len(moves) == 0 {
 					// terminal state
-					pqs[maxTurns].Push(item, state.Evaluation())
+					pqs[maxTurns].Push(state, state.Evaluation())
 					continue
 				}
 
